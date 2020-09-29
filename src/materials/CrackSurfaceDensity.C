@@ -32,7 +32,7 @@ CrackSurfaceDensity::validParams()
 CrackSurfaceDensity::CrackSurfaceDensity(const InputParameters & parameters)
   : ADMaterial(parameters),
     _c0(getFunction("local_dissipation_norm")),
-    _L(getMaterialProperty<Real>("phase_field_regularization_length")),
+    _L(getADMaterialProperty<Real>("phase_field_regularization_length")),
     _grad_d(adCoupledGradient("d")),
     _w(getADMaterialProperty<Real>("local_dissipation_name")),
     _gamma(declareADProperty<Real>(getParam<MaterialPropertyName>("crack_surface_density_name"))),
