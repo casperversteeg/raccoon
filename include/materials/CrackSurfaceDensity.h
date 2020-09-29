@@ -21,7 +21,7 @@ protected:
   const Function & _c0;
 
   /// phase field regularization length
-  const MaterialProperty<Real> & _L;
+  const ADMaterialProperty<Real> & _L;
 
   /// gradient of damage
   const ADVariableGradient & _grad_d;
