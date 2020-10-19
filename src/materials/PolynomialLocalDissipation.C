@@ -34,31 +34,31 @@ PolynomialLocalDissipationTempl<is_ad>::PolynomialLocalDissipationTempl(
     _dw_dd(declareGenericProperty<Real, is_ad>(
         derivativePropertyNameFirst(_w_name, this->getVar("d", 0)->name())))
 {
+  if (_coefs.size() < 1)
+    mooseError(
+        "List of coefficients in PolynomialLocalDissipation must have length greater than 0");
 }
 
 template <bool is_ad>
 void
 PolynomialLocalDissipationTempl<is_ad>::computeQpProperties()
 {
-  _w[_qp] = 0.0;
+  _w[_qp] = _coefs[0];
   _dw_dd[_qp] = 0.0;
-  for (unsigned i = 0; i < _coefs.size(); ++i)
+  for (unsigned i = 1; i < _coefs.size(); ++i)
   {
-    _w[_qp] += _coefs[i];
-    _w[_qp] *= _d[_qp];
-    switch (i)
+    _w[_qp] += _coefs[i] * std::pow(_d[_qp], i);
+    if (i == 1)
     {
-      case 0:
-        break;
-      case 1:
-        _dw_dd[_qp] += _coefs[i];
-        break;
-      default:
-        _dw_dd[_qp] += _coefs[i];
-        _dw_dd[_qp] *= _d[_qp];
-        break;
+      _dw_dd[_qp] += _coefs[i];
+    }
+    else
+    {
+      _dw_dd[_qp] += i * _coefs[i] * std::pow(_d[_qp], i - 1.0);
     }
   }
+  // _w[_qp] = 2 * _d[_qp] - _d[_qp] * _d[_qp];
+  // _dw_dd[_qp] = 2 - 2 * _d[_qp];
 }
 
 // template class PolynomialLocalDissipationTempl<false>;
