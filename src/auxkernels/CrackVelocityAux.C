@@ -28,7 +28,7 @@ template <bool is_ad>
 Real
 CrackVelocityAuxTempl<is_ad>::computeValue()
 {
-  if (_grad_d[_qp].norm() > 0.0)
+  if (_grad_d[_qp].norm() > 0.0 && _d_dot[_qp] > 0.0)
     return MetaPhysicL::raw_value(_d_dot[_qp] / _grad_d[_qp].norm());
   else
     return 0.0;

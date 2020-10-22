@@ -28,7 +28,6 @@ ADDynamicPFFTimeDerivatives::validParams()
 ADDynamicPFFTimeDerivatives::ADDynamicPFFTimeDerivatives(const InputParameters & parameters)
   : ADKernelValue(parameters),
     _d_dot(_var.adUDot()),
-    _d_dotdot(_var.uDotDot()),
     _dGc_dv(getADMaterialProperty<Real>(derivativePropertyNameFirst(
         getParam<MaterialPropertyName>("energy_release_rate_name"), "crack_speed"))),
     _d2Gc_dv2(getADMaterialProperty<Real>(derivativePropertyNameSecond(
@@ -47,10 +46,11 @@ ADDynamicPFFTimeDerivatives::precomputeQpResidual()
   if (_grad_u[_qp].norm() > 0.0)
   {
     Real c0 = _w_norm.value(_t, _q_point[_qp]);
+    ADReal _d_dotdot = 0.0;
     ADReal gamma =
         1 / c0 / _ell[_qp] * (_w[_qp] + _ell[_qp] * _ell[_qp] * _grad_u[_qp] * _grad_u[_qp]);
 
-    return -gamma * _d2Gc_dv2[_qp] / _grad_u[_qp].norm() / _grad_u[_qp].norm() * _d_dotdot[_qp] -
+    return -gamma * _d2Gc_dv2[_qp] / _grad_u[_qp].norm() / _grad_u[_qp].norm() * _d_dotdot -
            _dGc_dv[_qp] * _dw_dd[_qp] / c0 / _ell[_qp] / _grad_u[_qp].norm() * _d_dot[_qp];
   }
   else

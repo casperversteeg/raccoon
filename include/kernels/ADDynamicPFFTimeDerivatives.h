@@ -21,7 +21,7 @@ protected:
 
   // Time derivative of damage
   const ADVariableValue & _d_dot;
-  const VariableValue & _d_dotdot;
+  // const VariableValue * _d_dotdot;
   // Energy release rate, and its derivative
   const ADMaterialProperty<Real> & _dGc_dv;
   const ADMaterialProperty<Real> & _d2Gc_dv2;
