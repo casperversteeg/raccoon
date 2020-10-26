@@ -9,47 +9,34 @@ registerADMooseObject("raccoonApp", ADDynamicPFFDiffusion);
 InputParameters
 ADDynamicPFFDiffusion::validParams()
 {
-  InputParameters params = ADKernelGrad::validParams();
+  InputParameters params = ADPFFDiffusion::validParams();
   params.addClassDescription("Computes diffusion term in dynamic phase-field evolution equation, "
                              "where the diffusivity is rate-dependent.");
-  params.addParam<MaterialPropertyName>("energy_release_rate_name",
-                                        "energy_release_rate",
-                                        "Name of the material property containing Gc.");
-  params.addParam<MaterialPropertyName>("phase_field_regularization_length_name",
-                                        "phase_field_regularization_length",
-                                        "Name of the material property containing $\\ell$");
-  params.addParam<MaterialPropertyName>("local_dissipation_name", "w", "Name of local dissipation");
-  params.addRequiredParam<FunctionName>("local_dissipation_norm",
-                                        "norm of the local dissipation ||w(d)||");
+  params.addParam<MaterialPropertyName>(
+      "crack_speed_name", "crack_speed", "Name of material property containing the crack speed.");
+  params.addParam<MaterialPropertyName>("dissipation_modulus_name",
+                                        "dissipation_modulus",
+                                        "Name of the material property containing dissipation");
 
   return params;
 }
 
 ADDynamicPFFDiffusion::ADDynamicPFFDiffusion(const InputParameters & parameters)
-  : ADKernelGrad(parameters),
-    _d_dot(_var.adUDot()),
-    _Gc(getADMaterialProperty<Real>("energy_release_rate_name")),
-    _dGc_dv(getADMaterialProperty<Real>(derivativePropertyNameFirst(
-        getParam<MaterialPropertyName>("energy_release_rate_name"), "crack_speed"))),
-    _ell(getADMaterialProperty<Real>("phase_field_regularization_length_name")),
-    _w(getADMaterialProperty<Real>("local_dissipation_name")),
-    _w_norm(getFunction("local_dissipation_norm"))
+  : ADPFFDiffusion(parameters),
+    _crack_speed(getADMaterialProperty<Real>("crack_speed_name")),
+    _dissipation(getADMaterialProperty<Real>("dissipation_modulus_name"))
 {
 }
 
-ADRealVectorValue
-ADDynamicPFFDiffusion::precomputeQpResidual()
+ADReal
+ADDynamicPFFDiffusion::computeQpResidual()
 {
-  if (_grad_u[_qp].norm() > 0.0)
-  {
-    Real c0 = _w_norm.value(_t, _q_point[_qp]);
-    ADReal gamma =
-        1 / c0 / _ell[_qp] * (_w[_qp] + _ell[_qp] * _ell[_qp] * _grad_u[_qp] * _grad_u[_qp]);
-
-    ADReal D = 2 * _ell[_qp] * _Gc[_qp] / c0 -
-               gamma * _dGc_dv[_qp] * _d_dot[_qp] / std::pow(_grad_u[_qp].norm(), 3);
-    return D * _grad_u[_qp];
-  }
+  ADReal residual =
+      _grad_test[_i][_qp](0) * _grad_u[_qp](0) + _grad_test[_i][_qp](1) * _grad_u[_qp](1);
+  if (_coord_sys == Moose::COORD_RZ)
+    residual -= _test[_i][_qp] / _ad_q_point[_qp](0) * _grad_u[_qp](0);
   else
-    return 0.0;
+    residual += _grad_test[_i][_qp](2) * _grad_u[_qp](2);
+
+  return (_dissipation[_qp] * _crack_speed[_qp] + _M[_qp] * _kappa[_qp]) * residual;
 }
