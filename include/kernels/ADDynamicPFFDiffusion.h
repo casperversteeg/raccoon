@@ -4,11 +4,9 @@
 
 #pragma once
 
-#include "ADKernelGrad.h"
-#include "DerivativeMaterialPropertyNameInterface.h"
-#include "Function.h"
+#include "ADPFFDiffusion.h"
 
-class ADDynamicPFFDiffusion : public ADKernelGrad, public DerivativeMaterialPropertyNameInterface
+class ADDynamicPFFDiffusion : public ADPFFDiffusion
 {
 public:
   static InputParameters validParams();
@@ -16,16 +14,9 @@ public:
   ADDynamicPFFDiffusion(const InputParameters & parameters);
 
 protected:
-  virtual ADRealVectorValue precomputeQpResidual() override;
+  virtual ADReal computeQpResidual() override;
 
-  // Time derivative of damage
-  const ADVariableValue & _d_dot;
   // Energy release rate, and its derivative
-  const ADMaterialProperty<Real> & _Gc;
-  const ADMaterialProperty<Real> & _dGc_dv;
-  // Phase field regularization length
-  const ADMaterialProperty<Real> & _ell;
-  // Local dissipation and its norm
-  const ADMaterialProperty<Real> & _w;
-  const Function & _w_norm;
+  const ADMaterialProperty<Real> & _crack_speed;
+  const ADMaterialProperty<Real> & _dissipation;
 };
