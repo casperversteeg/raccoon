@@ -1,7 +1,7 @@
 E = 3.09e3
 nu = 0.35
 
-geom = 'msh/geom.msh'
+geom = 'mesh/dynamic_pmma_geom.msh'
 
 [GlobalParams]
   displacements = 'disp_x disp_y'
@@ -54,18 +54,21 @@ geom = 'msh/geom.msh'
     variable = 'disp_y'
     boundary = 'top'
     value = 0.06
+    use_displaced_mesh = false
   []
   [fix_y]
     type = ADDirichletBC
     variable = 'disp_y'
     boundary = 'center'
     value = 0.0
+    use_displaced_mesh = false
   []
   [fix_x]
     type = ADDirichletBC
     variable = 'disp_x'
     boundary = 'right'
     value = 0.0
+    use_displaced_mesh = false
   []
 []
 
@@ -90,7 +93,7 @@ geom = 'msh/geom.msh'
 [Outputs]
   [Exodus]
     type = Exodus
-    file_base = 'output/hai_test_QS'
+    file_base = 'output/dynamic_pmma_static'
     # output_material_properties = true
   []
 []

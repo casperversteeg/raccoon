@@ -114,10 +114,11 @@ gamma = 0.8
     use_displaced_mesh = false
   []
 
-  # [pff_inertia]
-  #   type = ADDynamicPFFInertia
-  #   variable = 'd'
-  # []
+  [pff_inertia]
+    type = ADDynamicPFFInertia
+    use_displaced_mesh = false
+    variable = 'd'
+  []
   [pff_grad]
     type = ADDynamicPFFGradientTimeDerivative
     variable = 'd'
@@ -218,10 +219,10 @@ gamma = 0.8
     type = ADComputeSmallStrain
   []
   [Gc]
-    type = ADLogarithmicEnergyReleaseRate
+    type = ADCubicEnergyReleaseRate
     d = 'd'
     static_fracture_energy = '${Gc}'
-    limiting_crack_speed = 1e6
+    limiting_crack_speed = 1e8
   []
   [local_dissipation]
     type = LinearLocalDissipation
@@ -349,6 +350,8 @@ gamma = 0.8
   # accept_on_max_fp_iteration = true
   # fp_max_its = 100
   # fp_tol = 1e-4
+  automatic_scaling = true
+  compute_scaling_once = false
 
   petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
   petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
@@ -371,8 +374,9 @@ gamma = 0.8
     type = Exodus
     file_base = 'output/dynamic_branching'
     output_material_properties = true
-    show_material_properties = 'E_el_active energy_release_rate'
-    interval = 10
+    show_material_properties = 'E_el_active energy_release_rate dissipation_modulus crack_inertia '
+                               'mobility'
+    # interval = 10
   []
   [Console]
     type = Console

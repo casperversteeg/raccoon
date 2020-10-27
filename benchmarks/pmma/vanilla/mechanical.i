@@ -7,46 +7,61 @@ psic = 0.91
 Gc = 3
 l = 0.4
 
-alpha = -0.3
-beta = 0.4225
-gamma = 0.8
-
 [GlobalParams]
   displacements = 'disp_x disp_y'
 []
 
 [Mesh]
-  file = 'output/dynamic_pmma_static.e'
+  file = '../output/dynamic_pmma_static.e'
 []
 
-[UserObjects]
-  [E_el_active]
-    type = ADFPIMaterialPropertyUserObject
-    mat_prop = 'E_el_active'
+[MultiApps]
+  [fracture]
+    type = TransientMultiApp
+    input_files = 'fracture.i'
+    cli_args = 'Gc=${Gc};l=${l};psic=${psic};'
+    sub_cycling = true
+    # catch_up = true
+  []
+[]
+
+[Transfers]
+  [from_d]
+    type = MultiAppCopyTransfer
+    multi_app = 'fracture'
+    direction = from_multiapp
+    source_variable = 'd'
+    variable = 'd'
+  []
+  [to_E_el_active]
+    type = MultiAppCopyTransfer
+    multi_app = 'fracture'
+    direction = to_multiapp
+    source_variable = 'E_el_active'
+    variable = 'E_el_active'
   []
 []
 
 [Variables]
   [disp_x]
     initial_from_file_var = 'disp_x'
+    # inital_from_file_timestep
   []
   [disp_y]
-    initial_from_file_var = 'disp_x'
-  []
-  [d]
+    initial_from_file_var = 'disp_y'
   []
 []
 
 [AuxVariables]
-  [stress_11]
+  [stress_xx]
     order = CONSTANT
     family = MONOMIAL
   []
-  [stress_12]
+  [stress_xy]
     order = CONSTANT
     family = MONOMIAL
   []
-  [stress_22]
+  [stress_yy]
     order = CONSTANT
     family = MONOMIAL
   []
@@ -58,31 +73,22 @@ gamma = 0.8
     order = CONSTANT
     family = MONOMIAL
   []
-  [bounds_dummy]
-  []
-  [vel_x]
-  []
-  [vel_y]
+  [d]
   []
   [d_vel]
     order = CONSTANT
     family = MONOMIAL
   []
-[]
-
-[Bounds]
-  [irreversibility]
-    type = VariableOldValueBoundsAux
-    variable = 'bounds_dummy'
-    bounded_variable = 'd'
-    bound_type = lower
+  [E_el_active]
+    family = MONOMIAL
   []
-  [upper]
-    type = ConstantBoundsAux
-    variable = 'bounds_dummy'
-    bounded_variable = 'd'
-    bound_value = 1
-    bound_type = upper
+  [accel_x]
+  []
+  [accel_y]
+  []
+  [vel_x]
+  []
+  [vel_y]
   []
 []
 
@@ -90,61 +96,41 @@ gamma = 0.8
   [solid_x]
     type = ADDynamicStressDivergenceTensors
     variable = disp_x
-    static_initialization = true
     component = 0
-    alpha = '${alpha}'
+    static_initialization = true
+    # alpha = '${alpha}'
   []
   [solid_y]
     type = ADDynamicStressDivergenceTensors
     variable = disp_y
-    static_initialization = true
     component = 1
-    alpha = '${alpha}'
+    static_initialization = true
+    # alpha = '${alpha}'
   []
-
   [inertia_x]
     type = InertialForce
     variable = disp_x
-    alpha = '${alpha}'
     use_displaced_mesh = false
+    # alpha = '${alpha}'
   []
   [inertia_y]
     type = InertialForce
     variable = disp_y
-    alpha = '${alpha}'
     use_displaced_mesh = false
-  []
-
-  [pff_inertia]
-    type = ADDynamicPFFInertia
-    use_displaced_mesh = false
-    variable = 'd'
-    alpha = '${alpha}'
-  []
-  [pff_grad]
-    type = ADDynamicPFFGradientTimeDerivative
-    variable = 'd'
-  []
-  [pff_diff]
-    type = ADDynamicPFFDiffusion
-    variable = 'd'
-  []
-  [pff_barr]
-    type = ADDynamicPFFBarrier
-    variable = 'd'
-  []
-  [pff_react]
-    type = ADPFFReaction
-    variable = 'd'
-    driving_energy_uo = 'E_el_active'
+    # alpha = '${alpha}'
   []
 []
 
 [AuxKernels]
+  [E_el_active]
+    type = ADMaterialRealAux
+    variable = 'E_el_active'
+    property = 'E_el_active'
+  []
   [stressxx]
     type = ADRankTwoAux
     rank_two_tensor = stress
-    variable = stress_11
+    variable = stress_xx
     index_i = 0
     index_j = 0
     execute_on = TIMESTEP_END
@@ -152,7 +138,7 @@ gamma = 0.8
   [stressxy]
     type = ADRankTwoAux
     rank_two_tensor = stress
-    variable = stress_12
+    variable = stress_xy
     index_i = 0
     index_j = 1
     execute_on = TIMESTEP_END
@@ -160,7 +146,7 @@ gamma = 0.8
   [stressyy]
     type = ADRankTwoAux
     rank_two_tensor = stress
-    variable = stress_22
+    variable = stress_yy
     index_i = 1
     index_j = 1
     execute_on = TIMESTEP_END
@@ -177,13 +163,27 @@ gamma = 0.8
     method = max
     execute_on = 'INITIAL'
   []
+  [ax]
+    type = TestNewmarkTI
+    variable = 'accel_x'
+    displacement = 'disp_x'
+    first = false
+    execute_on = 'TIMESTEP_END'
+  []
+  [ay]
+    type = TestNewmarkTI
+    variable = 'accel_y'
+    displacement = 'disp_y'
+    first = false
+    execute_on = 'TIMESTEP_END'
+  []
   [vx]
     type = TestNewmarkTI
     variable = 'vel_x'
     displacement = 'disp_x'
     execute_on = 'TIMESTEP_END'
   []
-  [vy]
+  [yx]
     type = TestNewmarkTI
     variable = 'vel_y'
     displacement = 'disp_y'
@@ -221,7 +221,7 @@ gamma = 0.8
     type = ADComputeSmallStrain
   []
   [Gc]
-    type = ADCubicEnergyReleaseRate
+    type = ADConstantEnergyReleaseRate
     d = 'd'
     static_fracture_energy = '${Gc}'
     limiting_crack_speed = 1e10
@@ -253,18 +253,21 @@ gamma = 0.8
     variable = 'disp_y'
     boundary = 'top'
     value = 0.06
+    use_displaced_mesh = false
   []
   [fix_y]
     type = ADDirichletBC
     variable = 'disp_y'
     boundary = 'center'
     value = 0.0
+    use_displaced_mesh = false
   []
   [fix_x]
     type = ADDirichletBC
     variable = 'disp_x'
     boundary = 'right'
     value = 0.0
+    use_displaced_mesh = false
   []
 []
 
@@ -352,41 +355,40 @@ gamma = 0.8
 
 [Executioner]
   type = Transient
-  solve_type = 'NEWTON'
-
-  # dt = 1e-7
   end_time = 1e-4
+  # solve_type = 'NEWTON'
 
-  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
-  petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
-
-  nl_abs_tol = 1e-5
-  nl_rel_tol = 1e-6
-  l_max_its = 100
-  nl_max_its = 100
+  nl_abs_tol = 1e-6
+  l_abs_tol = 1e-10
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
+  petsc_options_value = 'lu       superlu_dist'
   [TimeStepper]
     type = PostprocessorDT
     postprocessor = 'explicit_dt'
-    scale = 1
+    scale = 0.9
   []
   [TimeIntegrator]
-    type = NewmarkBeta
-    beta = '${beta}'
-    gamma = '${gamma}'
+    # type = NewmarkBeta
+    # beta = '${beta}'
+    # gamma = '${gamma}'
+    type = CentralDifference
+    solve_type = lumped
   []
 []
 
 [Outputs]
+  # print_linear_residuals = false
+  # hide = 'explicit_dt'
   [Exodus]
     type = Exodus
-    file_base = 'output/dynamic_pmma'
+    file_base = '../output/dynamic_pmma_vanilla'
     output_material_properties = true
-    show_material_properties = 'E_el_active energy_release_rate dissipation_modulus crack_inertia '
-                               'mobility'
+    show_material_properties = 'energy_release_rate dissipation_modulus crack_inertia mobility '
+                               'crack_speed'
     interval = 10
   []
   [CSV]
     type = CSV
-    file_base = 'output/dynamic_pmma_pp'
+    file_base = '../output/dynamic_pmma_vanilla_pp'
   []
 []
