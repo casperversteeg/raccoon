@@ -112,8 +112,8 @@
   petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
   petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
 
-  automatic_scaling = true
-  compute_scaling_once = false
+  # automatic_scaling = true
+  # compute_scaling_once = false
 
   [TimeIntegrator]
     type = NewmarkBeta

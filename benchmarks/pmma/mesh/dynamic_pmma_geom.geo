@@ -1,14 +1,14 @@
 h = 8;
 w = 16;
 
-E = 0.1;
+E = 0.025;
 
-Point(1) = {   0, 0, 0,   E};
-Point(2) = {   w, 0, 0,   E};
-Point(3) = {   w, h, 0, 2*E};
-Point(4) = {  -w, h, 0, 5*E};
-Point(5) = {  -w, 0, 0,   E};
-Point(6) = {-w+4, 0, 0,   E};
+Point(1) = {   0, 0, 0,    E};
+Point(2) = {   w, 0, 0,    E};
+Point(3) = {   w, h, 0, 10*E};
+Point(4) = {  -w, h, 0, 25*E};
+Point(5) = {  -w, 0, 0,  2*E};
+Point(6) = {-w+4, 0, 0,    E};
 
 
 // Lines

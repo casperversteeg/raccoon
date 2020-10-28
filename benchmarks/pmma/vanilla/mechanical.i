@@ -381,7 +381,7 @@ l = 0.4
   # hide = 'explicit_dt'
   [Exodus]
     type = Exodus
-    file_base = '../output/dynamic_pmma_vanilla'
+    file_base = 'output/dynamic_pmma_vanilla'
     output_material_properties = true
     show_material_properties = 'energy_release_rate dissipation_modulus crack_inertia mobility '
                                'crack_speed'
@@ -389,6 +389,6 @@ l = 0.4
   []
   [CSV]
     type = CSV
-    file_base = '../output/dynamic_pmma_vanilla_pp'
+    file_base = 'output/dynamic_pmma_vanilla_pp'
   []
 []

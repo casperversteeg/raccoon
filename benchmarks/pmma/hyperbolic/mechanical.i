@@ -5,7 +5,7 @@ nu = 0.35
 # sigmac = 75
 psic = 0.91
 Gc = 0.3
-l = 0.4
+l = 0.1
 
 kappa = 4e-13
 
@@ -226,7 +226,7 @@ vlim = 6e8
     poissons_ratio = '${nu}'
   []
   [stress]
-    type = SmallStrainDegradedElasticPK2Stress_NoSplit
+    type = SmallStrainDegradedElasticPK2Stress_StrainSpectral
     d = 'd'
   []
   [strain]
