@@ -102,13 +102,13 @@ gamma = 0.8
   []
 
   [inertia_x]
-    type = InertialForce
+    type = ADInertialForce
     variable = disp_x
     alpha = '${alpha}'
     use_displaced_mesh = false
   []
   [inertia_y]
-    type = InertialForce
+    type = ADInertialForce
     variable = disp_y
     alpha = '${alpha}'
     use_displaced_mesh = false
@@ -196,14 +196,9 @@ gamma = 0.8
 []
 
 [Materials]
-  [dens]
-    type = GenericConstantMaterial
-    prop_names = 'density'
-    prop_values = '${rho}'
-  []
   [const]
     type = ADGenericConstantMaterial
-    prop_names = 'phase_field_regularization_length critical_fracture_energy dens_ad'
+    prop_names = 'phase_field_regularization_length critical_fracture_energy density'
     prop_values = '${l} ${psic} ${rho}'
   []
   [elasticity_tensor]
@@ -212,36 +207,39 @@ gamma = 0.8
     poissons_ratio = '${nu}'
   []
   [stress]
-    type = SmallStrainDegradedElasticPK2Stress_NoSplit
+    type = SmallStrainDegradedElasticPK2Stress_StrainVolDev
     d = 'd'
   []
   [strain]
     type = ADComputeSmallStrain
   []
   [Gc]
-    type = ADCubicEnergyReleaseRate
+    type = ADQuadraticEnergyReleaseRate
     d = 'd'
     static_fracture_energy = '${Gc}'
-    limiting_crack_speed = 1e8
+    limiting_crack_speed = 2e8
   []
   [local_dissipation]
-    type = LinearLocalDissipation
+    type = PolynomialLocalDissipation
+    coefficients = '0 2 -1'
     d = 'd'
   []
   [fracture_properties]
     type = ADDynamicFractureMaterial
     d = 'd'
-    local_dissipation_norm = 8/3
+    local_dissipation_norm = '3.14159265358979'
   []
   [degradation]
-    type = LorentzDegradation
+    type = WuDegradation
     d = 'd'
     residual_degradation = 0
+    a2 = '-0.5'
+    a3 = 0
   []
   [gamma]
     type = CrackSurfaceDensity
     d = 'd'
-    local_dissipation_norm = 8/3
+    local_dissipation_norm = '3.14159265358979'
   []
 []
 
@@ -265,6 +263,16 @@ gamma = 0.8
 []
 
 [Postprocessors]
+  [elastic_energy] # The degraded energy
+    type = ADStrainEnergy
+  []
+  [kinetic_energy]
+    type = KineticEnergy
+  []
+  [fracture_energy]
+    type = ADFractureEnergy
+    d = 'd'
+  []
   [explicit_dt]
     type = ADBetterCriticalTimeStep
     density_name = 'dens_ad'

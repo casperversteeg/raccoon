@@ -4,7 +4,8 @@ nu = 0.2
 
 # sigmac = 1.5e-6
 Gc = 0.003
-l = 0.625
+# l = 0.625
+l = 0.5
 psic = 1.4822e-4
 
 label = 'nonvariational'
@@ -104,13 +105,13 @@ gamma = 0.8
   []
 
   [inertia_x]
-    type = InertialForce
+    type = ADInertialForce
     variable = disp_x
     alpha = '${alpha}'
     use_displaced_mesh = false
   []
   [inertia_y]
-    type = InertialForce
+    type = ADInertialForce
     variable = disp_y
     alpha = '${alpha}'
     use_displaced_mesh = false
@@ -181,22 +182,17 @@ gamma = 0.8
     execute_on = 'TIMESTEP_END'
   []
   [d_vel]
-    type = CrackVelocityAux
+    type = ADMaterialRealAux
     variable = 'd_vel'
-    d = 'd'
+    property = 'crack_speed'
     execute_on = 'TIMESTEP_END'
   []
 []
 
 [Materials]
-  [dens]
-    type = GenericConstantMaterial
-    prop_names = 'density'
-    prop_values = '${rho}'
-  []
   [const]
     type = ADGenericConstantMaterial
-    prop_names = 'phase_field_regularization_length critical_fracture_energy dens_ad'
+    prop_names = 'phase_field_regularization_length critical_fracture_energy density'
     prop_values = '${l} ${psic} ${rho}'
   []
   [elasticity_tensor]
@@ -205,37 +201,59 @@ gamma = 0.8
     poissons_ratio = '${nu}'
   []
   [stress]
-    type = SmallStrainDegradedElasticPK2Stress_NoSplit
+    type = SmallStrainDegradedElasticPK2Stress_StrainVolDev
     d = 'd'
   []
   [strain]
     type = ADComputeSmallStrain
   []
   [Gc]
-    type = ADLogarithmicEnergyReleaseRate
+    type = ADQuadraticEnergyReleaseRate
     d = 'd'
     static_fracture_energy = '${Gc}'
-    limiting_crack_speed = 1e6
+    limiting_crack_speed = 2e8
   []
   [local_dissipation]
-    type = LinearLocalDissipation
+    type = PolynomialLocalDissipation
+    coefficients = '0 2 -1'
     d = 'd'
   []
   [fracture_properties]
-    type = ADDynamicFractureMaterial
+    type = ADFractureMaterial
     d = 'd'
-    local_dissipation_norm = 8/3
+    local_dissipation_norm = '3.14159265358979'
   []
   [degradation]
-    type = LorentzDegradation
+    type = WuDegradation
     d = 'd'
     residual_degradation = 0
+    a2 = '-0.5'
+    a3 = 0
   []
   [gamma]
     type = CrackSurfaceDensity
     d = 'd'
-    local_dissipation_norm = 8/3
+    local_dissipation_norm = '3.14159265358979'
   []
+  # [local_dissipation]
+  #   type = LinearLocalDissipation
+  #   d = 'd'
+  # []
+  # [fracture_properties]
+  #   type = ADDynamicFractureMaterial
+  #   d = 'd'
+  #   local_dissipation_norm = 8/3
+  # []
+  # [degradation]
+  #   type = LorentzDegradation
+  #   d = 'd'
+  #   residual_degradation = 0
+  # []
+  # [gamma]
+  #   type = CrackSurfaceDensity
+  #   d = 'd'
+  #   local_dissipation_norm = 8/3
+  # []
 []
 
 [BCs]
@@ -258,9 +276,19 @@ gamma = 0.8
 []
 
 [Postprocessors]
+  [elastic_energy] # The degraded energy
+    type = ADStrainEnergy
+  []
+  [kinetic_energy]
+    type = ADKineticEnergy
+  []
+  [fracture_energy]
+    type = ADFractureEnergy
+    d = 'd'
+  []
   [explicit_dt]
     type = ADBetterCriticalTimeStep
-    density_name = 'dens_ad'
+    density_name = 'density'
     execute_on = 'INITIAL TIMESTEP_END'
   []
   [d7]
@@ -350,7 +378,7 @@ gamma = 0.8
   nl_abs_tol = 1e-6
   nl_rel_tol = 1e-10
   # l_max_its = 100
-  nl_max_its = 100
+  nl_max_its = 20
 
   [TimeIntegrator]
     type = NewmarkBeta
@@ -363,9 +391,9 @@ gamma = 0.8
   print_linear_residuals = false
   [Exodus]
     type = Exodus
-    file_base = '../output/dynamic_branching_${label}'
+    file_base = 'output/dynamic_branching_${label}'
     output_material_properties = true
-    show_material_properties = 'E_el_active energy_release_rate'
+    show_material_properties = 'E_el_active energy_release_rate crack_speed'
     interval = 10
   []
   [Console]
@@ -375,6 +403,6 @@ gamma = 0.8
   []
   [CSV]
     type = CSV
-    file_base = '../output/dynamic_branching_${label}_pp'
+    file_base = 'output/dynamic_branching_${label}_pp'
   []
 []

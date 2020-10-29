@@ -94,6 +94,11 @@ psic = 14.88
     component = 1
   []
 
+  [pff_inertia]
+    type = ADDynamicPFFInertia
+    use_displaced_mesh = false
+    variable = 'd'
+  []
   [pff_grad]
     type = ADDynamicPFFGradientTimeDerivative
     variable = 'd'
@@ -192,26 +197,29 @@ psic = 14.88
     type = ADQuadraticEnergyReleaseRate
     d = 'd'
     static_fracture_energy = '${Gc}'
-    limiting_crack_speed = 100
+    limiting_crack_speed = 1000
   []
   [local_dissipation]
-    type = LinearLocalDissipation
+    type = PolynomialLocalDissipation
+    coefficients = '0 2 -1'
     d = 'd'
   []
   [fracture_properties]
     type = ADDynamicFractureMaterial
     d = 'd'
-    local_dissipation_norm = 8/3
+    local_dissipation_norm = '3.14159265358979'
   []
   [degradation]
-    type = LorentzDegradation
+    type = WuDegradation
     d = 'd'
     residual_degradation = 0
+    a2 = '-0.5'
+    a3 = 0
   []
   [gamma]
     type = CrackSurfaceDensity
     d = 'd'
-    local_dissipation_norm = 8/3
+    local_dissipation_norm = '3.14159265358979'
   []
 []
 
@@ -240,6 +248,13 @@ psic = 14.88
 []
 
 [Postprocessors]
+  [elastic_energy] # The degraded energy
+    type = ADStrainEnergy
+  []
+  [fracture_energy]
+    type = ADFractureEnergy
+    d = 'd'
+  []
   [d7]
     type = FindValueOnLine
     v = d
@@ -306,30 +321,34 @@ psic = 14.88
   []
 []
 
-# [Problem]
-#   type = FixedPointProblem
-# []
+[Problem]
+  type = FixedPointProblem
+[]
 
 [Executioner]
-  type = Transient
+  type = FixedPointTransient
   solve_type = 'NEWTON'
 
   dt = 1e-4
-  end_time = 8e-3
+  end_time = 10e-3
   # line_search = none
+  automatic_scaling = true
+  compute_scaling_once = false
 
   petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
   petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
 
-  nl_abs_tol = 1e-8
-  nl_rel_tol = 1e-10
+  nl_abs_tol = 1e-6
+  nl_rel_tol = 1e-8
   l_max_its = 100
   nl_max_its = 100
 
-  # accept_on_max_fp_iteration = true
-  # fp_max_its = 10
-  # fp_tol = 1e-4
-
+  accept_on_max_fp_iteration = true
+  fp_max_its = 1
+  fp_tol = 1e-4
+  [TimeIntegrator]
+    type = NewmarkBeta
+  []
 []
 
 [Outputs]
@@ -338,7 +357,8 @@ psic = 14.88
     type = Exodus
     file_base = 'output/quasistatic'
     output_material_properties = true
-    show_material_properties = 'E_el_active energy_release_rate'
+    show_material_properties = 'E_el_active energy_release_rate crack_speed mobility crack_inertia '
+                               'dissipation_modulus'
     # interval = 10
   []
   [Console]
