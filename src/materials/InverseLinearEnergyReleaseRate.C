@@ -26,7 +26,8 @@ template <bool is_ad>
 void
 InverseLinearEnergyReleaseRateTempl<is_ad>::computeGc()
 {
-  ADReal den = 1 - _v[_qp] / _v_lim;
+  ADReal v = (_lag_v ? (*_v_old)[_qp] : _v[_qp]);
+  ADReal den = 1 - v / _v_lim;
   _Gc[_qp] = _Gc0 / den;
   _dGc_dv[_qp] = -_Gc0 / den / den;
   _d2Gc_dv2[_qp] = 2 * _Gc0 / den / den / den;

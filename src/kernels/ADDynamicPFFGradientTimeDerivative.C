@@ -3,6 +3,7 @@
 //* http://dolbow.pratt.duke.edu
 
 #include "ADDynamicPFFGradientTimeDerivative.h"
+#include "libmesh/libmesh_common.h"
 
 registerADMooseObject("raccoonApp", ADDynamicPFFGradientTimeDerivative);
 
@@ -42,7 +43,7 @@ ADDynamicPFFGradientTimeDerivative::ADDynamicPFFGradientTimeDerivative(
 ADReal
 ADDynamicPFFGradientTimeDerivative::precomputeQpResidual()
 {
-  if (_grad_u[_qp].norm() > 0.0)
+  if (_grad_u[_qp].norm() > TOLERANCE * TOLERANCE)
   {
     ADReal coef = _kappa[_qp] * _dM[_qp] - _dissipation[_qp] - _inertia[_qp] * _crack_speed[_qp];
     return coef * (_grad_u[_qp] * _grad_d_dot[_qp]) / _grad_u[_qp].norm();
