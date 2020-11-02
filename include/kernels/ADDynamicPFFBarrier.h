@@ -17,6 +17,8 @@ protected:
   virtual ADReal precomputeQpResidual() override;
 
   const MaterialPropertyName & _v_name;
-  const ADMaterialProperty<Real> & _crack_speed;
+  bool _lag_v;
+  const ADMaterialProperty<Real> * _crack_speed;
+  const MaterialProperty<Real> * _crack_speed_old;
   const ADMaterialProperty<Real> & _dM;
 };

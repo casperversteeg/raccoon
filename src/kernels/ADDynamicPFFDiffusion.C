@@ -17,13 +17,18 @@ ADDynamicPFFDiffusion::validParams()
   params.addParam<MaterialPropertyName>("dissipation_modulus_name",
                                         "dissipation_modulus",
                                         "Name of the material property containing dissipation");
+  params.addParam<bool>("lag_crack_speed",
+                        false,
+                        "Whether to use the crack speed from the previous step in this solve");
 
   return params;
 }
 
 ADDynamicPFFDiffusion::ADDynamicPFFDiffusion(const InputParameters & parameters)
   : ADPFFDiffusion(parameters),
-    _crack_speed(getADMaterialProperty<Real>("crack_speed_name")),
+    _lag_v(getParam<bool>("lag_crack_speed")),
+    _crack_speed(!_lag_v ? &getADMaterialProperty<Real>("crack_speed_name") : nullptr),
+    _crack_speed_old(_lag_v ? &getMaterialPropertyOld<Real>("crack_speed_name") : nullptr),
     _dissipation(getADMaterialProperty<Real>("dissipation_modulus_name"))
 {
 }
@@ -38,5 +43,11 @@ ADDynamicPFFDiffusion::computeQpResidual()
   else
     residual += _grad_test[_i][_qp](2) * _grad_u[_qp](2);
 
-  return (_dissipation[_qp] * _crack_speed[_qp] + _M[_qp] * _kappa[_qp]) * residual;
+  ADReal V;
+  if (_lag_v)
+    V = (*_crack_speed_old)[_qp];
+  else
+    V = (*_crack_speed)[_qp];
+
+  return (_dissipation[_qp] * V + _M[_qp] * _kappa[_qp]) * residual;
 }
