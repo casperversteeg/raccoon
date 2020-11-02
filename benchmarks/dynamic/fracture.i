@@ -54,14 +54,17 @@
   [pff_grad]
     type = ADDynamicPFFGradientTimeDerivative
     variable = 'd'
+    lag_crack_speed = true
   []
   [pff_diff]
     type = ADDynamicPFFDiffusion
     variable = 'd'
+    lag_crack_speed = true
   []
   [pff_barr]
     type = ADDynamicPFFBarrier
     variable = 'd'
+    lag_crack_speed = true
   []
   [pff_react]
     type = ADPFFReaction

@@ -14,13 +14,18 @@ ADDynamicPFFBarrier::validParams()
   params.addParam<MaterialPropertyName>("mobility_name", "mobility", "name of mobility");
   params.addParam<MaterialPropertyName>(
       "crack_speed_name", "crack_speed", "name of crack speed material property");
+  params.addParam<bool>("lag_crack_speed",
+                        false,
+                        "Whether to use the crack speed from the previous step in this solve");
   return params;
 }
 
 ADDynamicPFFBarrier::ADDynamicPFFBarrier(const InputParameters & parameters)
   : ADPFFBarrier(parameters),
     _v_name(getParam<MaterialPropertyName>("crack_speed_name")),
-    _crack_speed(getADMaterialProperty<Real>(_v_name)),
+    _lag_v(getParam<bool>("lag_crack_speed")),
+    _crack_speed(!_lag_v ? &getADMaterialProperty<Real>(_v_name) : nullptr),
+    _crack_speed_old(_lag_v ? &getMaterialPropertyOld<Real>(_v_name) : nullptr),
     _dM(getADMaterialProperty<Real>(
         derivativePropertyNameFirst(getParam<MaterialPropertyName>("mobility_name"), _v_name)))
 {
@@ -29,5 +34,10 @@ ADDynamicPFFBarrier::ADDynamicPFFBarrier(const InputParameters & parameters)
 ADReal
 ADDynamicPFFBarrier::precomputeQpResidual()
 {
-  return _dw_dd[_qp] * (_M[_qp] + _dM[_qp] * _crack_speed[_qp]);
+  ADReal V;
+  if (_lag_v)
+    V = (*_crack_speed_old)[_qp];
+  else
+    V = (*_crack_speed)[_qp];
+  return _dw_dd[_qp] * (_M[_qp] + _dM[_qp] * V);
 }

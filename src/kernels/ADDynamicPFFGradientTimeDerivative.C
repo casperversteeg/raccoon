@@ -22,6 +22,9 @@ ADDynamicPFFGradientTimeDerivative::validParams()
       "crack_inertia_name", "crack_inertia", "Name of crack inertia");
   params.addParam<MaterialPropertyName>(
       "dissipation_modulus_name", "dissipation_modulus", "Name of dissipation modulus");
+  params.addParam<bool>("lag_crack_speed",
+                        false,
+                        "Whether to use the crack speed from the previous step in this solve");
 
   return params;
 }
@@ -31,7 +34,9 @@ ADDynamicPFFGradientTimeDerivative::ADDynamicPFFGradientTimeDerivative(
   : ADKernelValue(parameters),
     _grad_d_dot(_var.gradSlnDot()),
     _v_name(getParam<MaterialPropertyName>("crack_speed_name")),
-    _crack_speed(getADMaterialProperty<Real>(_v_name)),
+    _lag_v(getParam<bool>("lag_crack_speed")),
+    _crack_speed(!_lag_v ? &getADMaterialProperty<Real>(_v_name) : nullptr),
+    _crack_speed_old(_lag_v ? &getMaterialPropertyOld<Real>(_v_name) : nullptr),
     _kappa(getADMaterialProperty<Real>("kappa_name")),
     _dM(getADMaterialProperty<Real>(
         derivativePropertyNameFirst(getParam<MaterialPropertyName>("mobility_name"), _v_name))),
@@ -45,7 +50,12 @@ ADDynamicPFFGradientTimeDerivative::precomputeQpResidual()
 {
   if (_grad_u[_qp].norm() > TOLERANCE)
   {
-    ADReal coef = _kappa[_qp] * _dM[_qp] - _dissipation[_qp] - _inertia[_qp] * _crack_speed[_qp];
+    ADReal V;
+    if (_lag_v)
+      V = (*_crack_speed_old)[_qp];
+    else
+      V = (*_crack_speed)[_qp];
+    ADReal coef = _kappa[_qp] * _dM[_qp] - _dissipation[_qp] - _inertia[_qp] * V;
     return coef * (_grad_u[_qp] * _grad_d_dot[_qp]) / _grad_u[_qp].norm();
   }
   else

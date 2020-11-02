@@ -17,6 +17,8 @@ protected:
   virtual ADReal computeQpResidual() override;
 
   // Energy release rate, and its derivative
-  const ADMaterialProperty<Real> & _crack_speed;
+  bool _lag_v;
+  const ADMaterialProperty<Real> * _crack_speed;
+  const MaterialProperty<Real> * _crack_speed_old;
   const ADMaterialProperty<Real> & _dissipation;
 };

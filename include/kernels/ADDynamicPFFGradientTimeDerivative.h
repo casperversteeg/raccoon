@@ -23,7 +23,9 @@ protected:
 
   /// Crack tip speed
   const MaterialPropertyName & _v_name;
-  const ADMaterialProperty<Real> & _crack_speed;
+  bool _lag_v;
+  const ADMaterialProperty<Real> * _crack_speed;
+  const MaterialProperty<Real> * _crack_speed_old;
 
   // interface coefficient and derivative of mobility w.r.t. crack speed
   const ADMaterialProperty<Real> & _kappa;
