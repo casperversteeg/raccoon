@@ -54,7 +54,7 @@ template <bool is_ad>
 void
 EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::initQpStatefulProperties()
 {
-  if (_grad_d[_qp].norm() > TOLERANCE * TOLERANCE)
+  if (_grad_d[_qp].norm() > TOLERANCE)
   {
     _v[_qp] = _d_dot[_qp] / _grad_d[_qp].norm();
   }
@@ -70,7 +70,7 @@ void
 EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::computeQpProperties()
 {
 
-  if (_grad_d[_qp].norm() > TOLERANCE * TOLERANCE)
+  if (_grad_d[_qp].norm() > TOLERANCE)
   {
     _v[_qp] = _d_dot[_qp] / _grad_d[_qp].norm();
   }

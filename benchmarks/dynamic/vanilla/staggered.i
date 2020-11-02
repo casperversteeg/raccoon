@@ -17,7 +17,7 @@ label = 'vanilla'
 [Mesh]
   [fmg]
     type = FileMeshGenerator
-    file = 'mesh/dynamic_branching_geom.msh'
+    file = '../mesh/dynamic_branching_geom.msh'
   []
 []
 
@@ -191,11 +191,13 @@ label = 'vanilla'
     type = ADGenericConstantMaterial
     prop_names = 'phase_field_regularization_length critical_fracture_energy density'
     prop_values = '${l} ${psic} ${rho}'
+    implicit = false
   []
   [elasticity_tensor]
     type = ADComputeIsotropicElasticityTensor
     youngs_modulus = '${E}'
     poissons_ratio = '${nu}'
+    implicit = false
   []
   [stress]
     type = SmallStrainDegradedElasticPK2Stress_StrainVolDev
@@ -356,6 +358,10 @@ label = 'vanilla'
     type = CentralDifference
     solve_type = lumped
   []
+  [Quadrature]
+    type = GAUSS
+    order = SECOND
+  []
 []
 
 [Outputs]
@@ -365,7 +371,7 @@ label = 'vanilla'
     file_base = 'output/dynamic_branching_staggered_${label}'
     output_material_properties = true
     show_material_properties = 'energy_release_rate dissipation_modulus crack_inertia crack_speed '
-    # interval = 10
+    interval = 10
   []
   [Console]
     type = Console

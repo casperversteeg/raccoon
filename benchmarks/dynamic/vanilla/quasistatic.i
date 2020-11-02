@@ -190,7 +190,7 @@ label = 'vanilla'
     type = ADConstantEnergyReleaseRate
     d = 'd'
     static_fracture_energy = '${Gc}'
-    limiting_crack_speed = 1000
+    limiting_crack_speed = 5000
   []
   [local_dissipation]
     type = PolynomialLocalDissipation
@@ -339,14 +339,14 @@ label = 'vanilla'
   dt = 1e-4
   end_time = 10e-3
   automatic_scaling = true
-  compute_scaling_once = false
+  # compute_scaling_once = false
 
   petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
   petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
 
   nl_abs_tol = 1e-6
   nl_rel_tol = 1e-8
-  l_max_its = 100
+  # l_max_its = 100
   nl_max_its = 100
 
   accept_on_max_fp_iteration = true

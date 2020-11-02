@@ -212,6 +212,7 @@ gamma = 0.8
     d = 'd'
     static_fracture_energy = '${Gc}'
     limiting_crack_speed = 2e8
+    lag_crack_speed = true
   []
   [local_dissipation]
     type = PolynomialLocalDissipation

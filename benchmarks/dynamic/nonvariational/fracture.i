@@ -66,6 +66,7 @@
     type = ADGenericConstantMaterial
     prop_names = 'phase_field_regularization_length critical_fracture_energy'
     prop_values = '${l} ${psic}'
+    implicit = false
   []
   [Gc]
     type = ADQuadraticEnergyReleaseRate
@@ -98,9 +99,6 @@
   []
 []
 
-[Postprocessors]
-[]
-
 [Executioner]
   type = Transient
 
@@ -116,6 +114,10 @@
 
   [TimeIntegrator]
     type = NewmarkBeta
+  []
+  [Quadrature]
+    type = GAUSS
+    order = FIRST
   []
 []
 

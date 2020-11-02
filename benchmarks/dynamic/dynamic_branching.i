@@ -218,6 +218,7 @@ gamma = 0.8
     d = 'd'
     static_fracture_energy = '${Gc}'
     limiting_crack_speed = 2e8
+    lag_crack_speed = true
   []
   [local_dissipation]
     type = PolynomialLocalDissipation
@@ -267,7 +268,7 @@ gamma = 0.8
     type = ADStrainEnergy
   []
   [kinetic_energy]
-    type = KineticEnergy
+    type = ADKineticEnergy
   []
   [fracture_energy]
     type = ADFractureEnergy
@@ -275,7 +276,7 @@ gamma = 0.8
   []
   [explicit_dt]
     type = ADBetterCriticalTimeStep
-    density_name = 'dens_ad'
+    # density_name = 'dens_ad'
     execute_on = 'INITIAL TIMESTEP_END'
   []
   [d7]

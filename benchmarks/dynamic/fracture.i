@@ -1,5 +1,5 @@
 [Mesh]
-  file = '../mesh/dynamic_branching_geom.msh'
+  file = 'mesh/dynamic_branching_geom.msh'
 []
 
 [Variables]
@@ -75,6 +75,7 @@
     type = ADGenericConstantMaterial
     prop_names = 'phase_field_regularization_length critical_fracture_energy'
     prop_values = '${l} ${psic}'
+    implicit = false
   []
   [Gc]
     type = ADQuadraticEnergyReleaseRate
@@ -126,17 +127,13 @@
   [TimeIntegrator]
     type = NewmarkBeta
   []
+  [Quadrature]
+    type = GAUSS
+    order = FIRST
+  []
 []
 
 [Outputs]
   print_linear_residuals = false
   print_linear_converged_reason = false
-  # [Exodus]
-  #   type = Exodus
-  #   file_base = 'output/dynamic_branching_staggered_${label}'
-  #   output_material_properties = true
-  #   show_material_properties = 'E_el_active energy_release_rate dissipation_modulus crack_inertia '
-  #                              'crack_speed mobility'
-  #   # interval = 10
-  # []
 []

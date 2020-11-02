@@ -1,11 +1,13 @@
-E = 2.1e5
-nu = 0.3
+E = 32e3
+rho = 2450e-12
+nu = 0.2
 
 # sigmac = 1.5e-6
-Gc = 2.7
-l = 0.02
-psic = 14.88
+Gc = 0.003
+l = 0.625
+psic = 1.4822e-4
 
+vlim = 2e8
 label = 'nonvariational'
 
 [GlobalParams]
@@ -15,14 +17,41 @@ label = 'nonvariational'
 [Mesh]
   [fmg]
     type = FileMeshGenerator
-    file = '../mesh/quasistatic_geom.msh'
+    file = '../mesh/dynamic_branching_geom.msh'
   []
 []
 
-[UserObjects]
-  [E_el_active]
-    type = ADFPIMaterialPropertyUserObject
-    mat_prop = 'E_el_active'
+[MultiApps]
+  [fracture]
+    type = TransientMultiApp
+    input_files = 'fracture.i'
+    cli_args = 'Gc=${Gc};l=${l};psic=${psic};vlim=${vlim}'
+    sub_cycling = true
+    # catch_up = true
+  []
+[]
+
+[Transfers]
+  [from_d]
+    type = MultiAppCopyTransfer
+    multi_app = 'fracture'
+    direction = from_multiapp
+    source_variable = 'd'
+    variable = 'd'
+  []
+  # [from_d_vel]
+  #   type = MultiAppCopyTransfer
+  #   multi_app = 'fracture'
+  #   direction = from_multiapp
+  #   source_variable = 'd_vel'
+  #   variable = 'd_vel'
+  # []
+  [to_E_el_active]
+    type = MultiAppCopyTransfer
+    multi_app = 'fracture'
+    direction = to_multiapp
+    source_variable = 'E_el_active'
+    variable = 'E_el_active'
   []
 []
 
@@ -30,8 +59,6 @@ label = 'nonvariational'
   [disp_x]
   []
   [disp_y]
-  []
-  [d]
   []
 []
 
@@ -62,25 +89,14 @@ label = 'nonvariational'
   []
   [vel_y]
   []
+  [E_el_active]
+    family = MONOMIAL
+  []
+  [d]
+  []
   [d_vel]
     order = CONSTANT
     family = MONOMIAL
-  []
-[]
-
-[Bounds]
-  [irreversibility]
-    type = VariableOldValueBoundsAux
-    variable = 'bounds_dummy'
-    bounded_variable = 'd'
-    bound_type = lower
-  []
-  [upper]
-    type = ConstantBoundsAux
-    variable = 'bounds_dummy'
-    bounded_variable = 'd'
-    bound_value = 1
-    bound_type = upper
   []
 []
 
@@ -96,23 +112,24 @@ label = 'nonvariational'
     component = 1
   []
 
-  [pff_diff]
-    type = ADPFFDiffusion
-    variable = 'd'
+  [inertia_x]
+    type = ADInertialForce
+    variable = disp_x
+    use_displaced_mesh = false
   []
-  [pff_barr]
-    type = ADPFFBarrier
-    variable = 'd'
-  []
-  [pff_react]
-    type = ADPFFReaction
-    variable = 'd'
-    driving_energy_uo = 'E_el_active'
-    lag = false
+  [inertia_y]
+    type = ADInertialForce
+    variable = disp_y
+    use_displaced_mesh = false
   []
 []
 
 [AuxKernels]
+  [E_el_active]
+    type = ADMaterialRealAux
+    variable = 'E_el_active'
+    property = 'E_el_active'
+  []
   [stressxx]
     type = ADRankTwoAux
     rank_two_tensor = stress
@@ -172,16 +189,18 @@ label = 'nonvariational'
 [Materials]
   [const]
     type = ADGenericConstantMaterial
-    prop_names = 'phase_field_regularization_length critical_fracture_energy'
-    prop_values = '${l} ${psic}'
+    prop_names = 'phase_field_regularization_length critical_fracture_energy density'
+    prop_values = '${l} ${psic} ${rho}'
+    implicit = false
   []
   [elasticity_tensor]
     type = ADComputeIsotropicElasticityTensor
     youngs_modulus = '${E}'
     poissons_ratio = '${nu}'
+    implicit = false
   []
   [stress]
-    type = SmallStrainDegradedElasticPK2Stress_NoSplit
+    type = SmallStrainDegradedElasticPK2Stress_StrainVolDev
     d = 'd'
   []
   [strain]
@@ -191,7 +210,7 @@ label = 'nonvariational'
     type = ADQuadraticEnergyReleaseRate
     d = 'd'
     static_fracture_energy = '${Gc}'
-    limiting_crack_speed = 5000
+    limiting_crack_speed = 2e8
     lag_crack_speed = true
   []
   [local_dissipation]
@@ -216,46 +235,21 @@ label = 'nonvariational'
     d = 'd'
     local_dissipation_norm = '3.14159265358979'
   []
-  # [local_dissipation]
-  #   type = LinearLocalDissipation
-  #   d = 'd'
-  # []
-  # [fracture_properties]
-  #   type = ADDynamicFractureMaterial
-  #   d = 'd'
-  #   local_dissipation_norm = 8/3
-  # []
-  # [degradation]
-  #   type = LorentzDegradation
-  #   d = 'd'
-  #   residual_degradation = 0
-  # []
-  # [gamma]
-  #   type = CrackSurfaceDensity
-  #   d = 'd'
-  #   local_dissipation_norm = 8/3
-  # []
 []
 
 [BCs]
-  [displ_top]
-    type = ADFunctionDirichletBC
+  [traction_top]
+    type = ADPressure
     boundary = 'top'
     variable = 'disp_y'
-    function = 't'
+    component = 1
+    constant = -1
     use_displaced_mesh = false
   []
   [y_disp]
     type = ADDirichletBC
-    boundary = 'bottom'
+    boundary = 'center'
     variable = 'disp_y'
-    value = 0
-    use_displaced_mesh = false
-  []
-  [x_disp]
-    type = ADDirichletBC
-    boundary = 'top bottom'
-    variable = 'disp_x'
     value = 0
     use_displaced_mesh = false
   []
@@ -264,6 +258,14 @@ label = 'nonvariational'
 [Postprocessors]
   [elastic_energy] # The degraded energy
     type = ADStrainEnergy
+  []
+  [kinetic_energy]
+    type = ADKineticEnergy
+  []
+  [explicit_dt]
+    type = ADBetterCriticalTimeStep
+    density_name = 'density'
+    execute_on = 'INITIAL TIMESTEP_END'
   []
   [fracture_energy]
     type = ADFractureEnergy
@@ -274,7 +276,7 @@ label = 'nonvariational'
     v = d
     target = 0.7
     start_point = '0 0 0'
-    end_point = '0.5 0 0'
+    end_point = '50 0 0'
     depth = 100
     error_if_not_found = false
     default_value = 0
@@ -284,7 +286,7 @@ label = 'nonvariational'
     v = d
     target = 0.5
     start_point = '0 0 0'
-    end_point = '0.5 0 0'
+    end_point = '50 0 0'
     depth = 100
     error_if_not_found = false
     default_value = 0
@@ -294,7 +296,7 @@ label = 'nonvariational'
     v = d
     target = 0.3
     start_point = '0 0 0'
-    end_point = '0.5 0 0'
+    end_point = '50 0 0'
     depth = 100
     error_if_not_found = false
     default_value = 0
@@ -306,7 +308,7 @@ label = 'nonvariational'
     w = d_vel
     target = 0.7
     start_point = '0 0 0'
-    end_point = '0.5 0 0'
+    end_point = '50 0 0'
     depth = 100
     error_if_not_found = false
     default_value = 0
@@ -317,7 +319,7 @@ label = 'nonvariational'
     w = d_vel
     target = 0.5
     start_point = '0 0 0'
-    end_point = '0.5 0 0'
+    end_point = '50 0 0'
     depth = 100
     error_if_not_found = false
     default_value = 0
@@ -328,49 +330,48 @@ label = 'nonvariational'
     w = d_vel
     target = 0.3
     start_point = '0 0 0'
-    end_point = '0.5 0 0'
+    end_point = '50 0 0'
     depth = 100
     error_if_not_found = false
     default_value = 0
   []
 []
 
-[Problem]
-  type = FixedPointProblem
-[]
-
 [Executioner]
-  type = FixedPointTransient
-  solve_type = 'NEWTON'
+  type = Transient
+  # solve_type = 'NEWTON'
 
-  dt = 1e-4
-  end_time = 10e-3
-  # line_search = none
-  automatic_scaling = true
-  # compute_scaling_once = false
-
-  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
-  petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
+  dt = 1e-7
+  end_time = 80e-6
 
   nl_abs_tol = 1e-6
-  nl_rel_tol = 1e-8
+  nl_rel_tol = 1e-10
   # l_max_its = 100
   nl_max_its = 100
 
-  accept_on_max_fp_iteration = true
-  fp_max_its = 1
-  fp_tol = 1e-4
+  [TimeStepper]
+    type = PostprocessorDT
+    postprocessor = 'explicit_dt'
+    scale = 0.9
+  []
+  [TimeIntegrator]
+    type = CentralDifference
+    solve_type = lumped
+  []
+  [Quadrature]
+    type = GAUSS
+    order = SECOND
+  []
 []
 
 [Outputs]
   print_linear_residuals = false
   [Exodus]
     type = Exodus
-    file_base = 'output/quasistatic_${label}'
+    file_base = 'output/dynamic_branching_staggered_${label}'
     output_material_properties = true
-    show_material_properties = 'E_el_active energy_release_rate crack_speed mobility crack_inertia '
-                               'dissipation_modulus'
-    # interval = 10
+    show_material_properties = 'energy_release_rate dissipation_modulus crack_inertia crack_speed '
+    interval = 10
   []
   [Console]
     type = Console
@@ -379,6 +380,6 @@ label = 'nonvariational'
   []
   [CSV]
     type = CSV
-    file_base = 'output/quasistatic_${label}_pp'
+    file_base = 'output/dynamic_branching_staggered_${label}_pp'
   []
 []
