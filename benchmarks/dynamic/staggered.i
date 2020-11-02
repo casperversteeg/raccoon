@@ -8,7 +8,7 @@ l = 0.625
 psic = 1.4822e-4
 
 vlim = 2e8
-label = 'vanilla'
+label = 'variational'
 
 [GlobalParams]
   displacements = 'disp_x disp_y'
@@ -24,7 +24,7 @@ label = 'vanilla'
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = '${label}/fracture.i'
+    input_files = 'fracture.i'
     cli_args = 'Gc=${Gc};l=${l};psic=${psic};vlim=${vlim}'
     sub_cycling = true
     # catch_up = true
@@ -191,11 +191,13 @@ label = 'vanilla'
     type = ADGenericConstantMaterial
     prop_names = 'phase_field_regularization_length critical_fracture_energy density'
     prop_values = '${l} ${psic} ${rho}'
+    implicit = false
   []
   [elasticity_tensor]
     type = ADComputeIsotropicElasticityTensor
     youngs_modulus = '${E}'
     poissons_ratio = '${nu}'
+    implicit = false
   []
   [stress]
     type = SmallStrainDegradedElasticPK2Stress_StrainVolDev
@@ -356,6 +358,10 @@ label = 'vanilla'
     type = CentralDifference
     solve_type = lumped
   []
+  [Quadrature]
+    type = GAUSS
+    order = SECOND
+  []
 []
 
 [Outputs]
@@ -365,7 +371,7 @@ label = 'vanilla'
     file_base = 'output/dynamic_branching_staggered_${label}'
     output_material_properties = true
     show_material_properties = 'energy_release_rate dissipation_modulus crack_inertia crack_speed '
-    # interval = 10
+    interval = 10
   []
   [Console]
     type = Console

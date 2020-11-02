@@ -47,10 +47,32 @@ EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::EnergyReleaseRateSpeedDependent
 
 template <bool is_ad>
 void
+<<<<<<< HEAD
 EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::computeQpProperties()
 {
 
   if (_grad_d[_qp].norm() > 0.0)
+=======
+EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::initQpStatefulProperties()
+{
+  if (_grad_d[_qp].norm() > TOLERANCE)
+  {
+    _v[_qp] = _d_dot[_qp] / _grad_d[_qp].norm();
+  }
+  else
+  {
+    _v[_qp] = 0.0;
+  }
+  computeGc();
+}
+
+template <bool is_ad>
+void
+EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::computeQpProperties()
+{
+
+  if (_grad_d[_qp].norm() > TOLERANCE)
+>>>>>>> stagger swagger matters naught
   {
     _v[_qp] = _d_dot[_qp] / _grad_d[_qp].norm();
   }

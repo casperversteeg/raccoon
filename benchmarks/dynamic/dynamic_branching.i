@@ -221,7 +221,12 @@ gamma = 0.8
     type = ADLogarithmicEnergyReleaseRate
     d = 'd'
     static_fracture_energy = '${Gc}'
+<<<<<<< HEAD
     limiting_crack_speed = 1e6
+=======
+    limiting_crack_speed = 2e8
+    lag_crack_speed = true
+>>>>>>> stagger swagger matters naught
   []
   [local_dissipation]
     type = LinearLocalDissipation
@@ -264,9 +269,22 @@ gamma = 0.8
 []
 
 [Postprocessors]
+<<<<<<< HEAD
+=======
+  [elastic_energy] # The degraded energy
+    type = ADStrainEnergy
+  []
+  [kinetic_energy]
+    type = ADKineticEnergy
+  []
+  [fracture_energy]
+    type = ADFractureEnergy
+    d = 'd'
+  []
+>>>>>>> stagger swagger matters naught
   [explicit_dt]
     type = ADBetterCriticalTimeStep
-    density_name = 'dens_ad'
+    # density_name = 'dens_ad'
     execute_on = 'INITIAL TIMESTEP_END'
   []
   [d7]

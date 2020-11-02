@@ -194,7 +194,16 @@ label = 'vanilla'
     type = ADConstantEnergyReleaseRate
     d = 'd'
     static_fracture_energy = '${Gc}'
+<<<<<<< HEAD
     limiting_crack_speed = 200
+=======
+    limiting_crack_speed = 5000
+  []
+  [local_dissipation]
+    type = PolynomialLocalDissipation
+    coefficients = '0 2 -1'
+    d = 'd'
+>>>>>>> stagger swagger matters naught
   []
   [fracture_properties]
     type = ADFractureMaterial
@@ -308,14 +317,26 @@ label = 'vanilla'
   solve_type = 'NEWTON'
 
   dt = 1e-4
+<<<<<<< HEAD
   end_time = 8e-3
+=======
+  end_time = 10e-3
+  automatic_scaling = true
+  # compute_scaling_once = false
+>>>>>>> stagger swagger matters naught
 
   petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
   petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
 
+<<<<<<< HEAD
   nl_abs_tol = 1e-8
   nl_rel_tol = 1e-6
   l_max_its = 100
+=======
+  nl_abs_tol = 1e-6
+  nl_rel_tol = 1e-8
+  # l_max_its = 100
+>>>>>>> stagger swagger matters naught
   nl_max_its = 100
 
   accept_on_max_fp_iteration = true

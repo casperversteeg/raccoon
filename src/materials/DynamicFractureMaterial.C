@@ -63,7 +63,11 @@ void
 DynamicFractureMaterialTempl<is_ad>::initQpStatefulProperties()
 {
   FractureMaterialTempl<is_ad>::initQpStatefulProperties();
+<<<<<<< HEAD
   if (_grad_d[_qp].norm() > 0.0)
+=======
+  if (_grad_d[_qp].norm() > TOLERANCE)
+>>>>>>> stagger swagger matters naught
   {
     _damage_inertia[_qp] = -_gamma[_qp] * _d2Gc_dv2[_qp] / _grad_d[_qp].norm_sq();
     _dissipation[_qp] = _gamma[_qp] * _dGc_dv[_qp] / _grad_d[_qp].norm_sq();
@@ -83,7 +87,11 @@ DynamicFractureMaterialTempl<is_ad>::computeQpProperties()
   Real c0 = _w_norm.value(_t, _q_point[_qp]);
 
   _dM_dv[_qp] = _dGc_dv[_qp] / c0 / _L[_qp];
+<<<<<<< HEAD
   if (_grad_d[_qp].norm() > 0.0)
+=======
+  if (_grad_d[_qp].norm() > TOLERANCE)
+>>>>>>> stagger swagger matters naught
   {
     _damage_inertia[_qp] = -_gamma[_qp] * _d2Gc_dv2[_qp] / _grad_d[_qp].norm_sq();
     _dissipation[_qp] = _gamma[_qp] * _dGc_dv[_qp] / _grad_d[_qp].norm_sq();

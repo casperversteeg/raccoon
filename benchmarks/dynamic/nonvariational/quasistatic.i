@@ -190,7 +190,12 @@ label = 'nonvariational'
     type = ADQuadraticEnergyReleaseRate
     d = 'd'
     static_fracture_energy = '${Gc}'
+<<<<<<< HEAD
     limiting_crack_speed = 100
+=======
+    limiting_crack_speed = 5000
+    lag_crack_speed = true
+>>>>>>> stagger swagger matters naught
   []
   [local_dissipation]
     type = LinearLocalDissipation
@@ -315,13 +320,24 @@ label = 'nonvariational'
   dt = 1e-4
   end_time = 8e-3
   # line_search = none
+<<<<<<< HEAD
+=======
+  automatic_scaling = true
+  # compute_scaling_once = false
+>>>>>>> stagger swagger matters naught
 
   petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
   petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
 
+<<<<<<< HEAD
   nl_abs_tol = 1e-8
   nl_rel_tol = 1e-10
   l_max_its = 100
+=======
+  nl_abs_tol = 1e-6
+  nl_rel_tol = 1e-8
+  # l_max_its = 100
+>>>>>>> stagger swagger matters naught
   nl_max_its = 100
 
   accept_on_max_fp_iteration = true
@@ -335,7 +351,12 @@ label = 'nonvariational'
     type = Exodus
     file_base = '../output/quasistatic_${label}'
     output_material_properties = true
+<<<<<<< HEAD
     show_material_properties = 'E_el_active energy_release_rate'
+=======
+    show_material_properties = 'E_el_active energy_release_rate crack_speed mobility crack_inertia '
+                               'dissipation_modulus'
+>>>>>>> stagger swagger matters naught
     # interval = 10
   []
   [Console]
