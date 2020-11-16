@@ -94,11 +94,11 @@ psic = 14.88
     component = 1
   []
 
-  # [pff_inertia]
-  #   type = ADDynamicPFFInertia
-  #   use_displaced_mesh = false
-  #   variable = 'd'
-  # []
+  [pff_inertia]
+    type = ADDynamicPFFInertia
+    use_displaced_mesh = false
+    variable = 'd'
+  []
   [pff_grad]
     type = ADDynamicPFFGradientTimeDerivative
     variable = 'd'
@@ -347,9 +347,9 @@ psic = 14.88
   accept_on_max_fp_iteration = true
   fp_max_its = 1
   fp_tol = 1e-4
-  # [TimeIntegrator]
-  #   type = NewmarkBeta
-  # []
+  [TimeIntegrator]
+    type = NewmarkBeta
+  []
 []
 
 [Outputs]
@@ -359,7 +359,7 @@ psic = 14.88
     file_base = 'output/quasistatic'
     output_material_properties = true
     show_material_properties = 'E_el_active energy_release_rate crack_speed mobility crack_inertia '
-                               'dissipation_modulus'
+                               'dissipation_modulus crack_speed'
     # interval = 10
   []
   [Console]
