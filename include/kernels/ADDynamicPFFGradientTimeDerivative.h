@@ -19,7 +19,7 @@ protected:
   virtual ADReal precomputeQpResidual() override;
 
   // Time derivative of damage gradient
-  const VariableGradient & _grad_d_dot;
+  const ADVariableGradient & _grad_d_dot;
 
   /// Crack tip speed
   const MaterialPropertyName & _v_name;

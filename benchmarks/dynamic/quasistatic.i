@@ -95,6 +95,7 @@ psic = 14.88
   []
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   # [pff_inertia]
   #   type = ADDynamicPFFInertia
@@ -102,6 +103,13 @@ psic = 14.88
   #   variable = 'd'
   # []
 >>>>>>> stagger swagger matters naught
+=======
+  [pff_inertia]
+    type = ADDynamicPFFInertia
+    use_displaced_mesh = false
+    variable = 'd'
+  []
+>>>>>>> diffusion rate ad
   [pff_grad]
     type = ADDynamicPFFGradientTimeDerivative
     variable = 'd'
@@ -358,10 +366,16 @@ psic = 14.88
   accept_on_max_fp_iteration = true
   fp_max_its = 1
   fp_tol = 1e-4
+<<<<<<< HEAD
   # [TimeIntegrator]
   #   type = NewmarkBeta
   # []
 >>>>>>> stagger swagger matters naught
+=======
+  [TimeIntegrator]
+    type = NewmarkBeta
+  []
+>>>>>>> diffusion rate ad
 []
 
 [Outputs]
@@ -370,7 +384,12 @@ psic = 14.88
     type = Exodus
     file_base = 'output/quasistatic'
     output_material_properties = true
+<<<<<<< HEAD
     show_material_properties = 'E_el_active energy_release_rate'
+=======
+    show_material_properties = 'E_el_active energy_release_rate crack_speed mobility crack_inertia '
+                               'dissipation_modulus crack_speed'
+>>>>>>> diffusion rate ad
     # interval = 10
   []
   [Console]

@@ -31,7 +31,7 @@ ADDynamicPFFGradientTimeDerivative::validParams()
 ADDynamicPFFGradientTimeDerivative::ADDynamicPFFGradientTimeDerivative(
     const InputParameters & parameters)
   : ADKernelValue(parameters),
-    _grad_d_dot(_var.gradSlnDot()),
+    _grad_d_dot(_var.adGradSlnDot()),
     _v_name(getParam<MaterialPropertyName>("crack_speed_name")),
     _lag_v(getParam<bool>("lag_crack_speed")),
     _crack_speed(!_lag_v ? &getADMaterialProperty<Real>(_v_name) : nullptr),
