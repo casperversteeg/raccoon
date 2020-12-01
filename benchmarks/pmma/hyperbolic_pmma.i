@@ -2,12 +2,10 @@ E = 3.09e3
 rho = 1180e-12
 nu = 0.35
 
-# ACTUAL sigmac = 75, Gc = 0.3
-
-# sigmac = 60
-psic = 0.405
-Gc = 1
-l = 0.3
+# sigmac = 75
+psic = 0.91
+Gc = 0.3
+l = 0.04
 
 alpha = -0.3
 beta = 0.4225
@@ -19,22 +17,6 @@ gamma = 0.8
 
 [Mesh]
   file = 'output/dynamic_pmma_static.e'
-[]
-
-[Adaptivity]
-  marker = box
-  initial_steps = 1
-  stop_time = 1e-10
-  max_h_level = 1
-  [Markers]
-    [box]
-      type = BoxMarker
-      bottom_left = '-14 -0.01 0'
-      top_right = '0 1.51 0'
-      inside = refine
-      outside = do_nothing
-    []
-  []
 []
 
 [UserObjects]
@@ -81,10 +63,6 @@ gamma = 0.8
   [vel_x]
   []
   [vel_y]
-  []
-  [d_vel]
-    order = CONSTANT
-    family = MONOMIAL
   []
 []
 
@@ -135,16 +113,11 @@ gamma = 0.8
     use_displaced_mesh = false
   []
 
-  # [pff_inertia]
-  #   type = ADDynamicPFFInertia
-  #   use_displaced_mesh = false
-  #   variable = 'd'
-  #   alpha = '${alpha}'
-  # []
-  # [pff_grad]
-  #   type = ADDynamicPFFGradientTimeDerivative
-  #   variable = 'd'
-  # []
+  [pff_difrate]
+    type = ADDiffusionRate
+    variable = 'd'
+    mu = 0
+  []
   [pff_diff]
     type = ADPFFDiffusion
     variable = 'd'
@@ -209,12 +182,6 @@ gamma = 0.8
     displacement = 'disp_y'
     execute_on = 'TIMESTEP_END'
   []
-  [d_vel]
-    type = ADMaterialRealAux
-    variable = 'd_vel'
-    property = 'crack_speed'
-    execute_on = 'TIMESTEP_END'
-  []
 []
 
 [Materials]
@@ -222,11 +189,13 @@ gamma = 0.8
     type = ADGenericConstantMaterial
     prop_names = 'density phase_field_regularization_length critical_fracture_energy'
     prop_values = '${rho} ${l} ${psic}'
+    implicit = false
   []
   [elasticity_tensor]
     type = ADComputeIsotropicElasticityTensor
     youngs_modulus = '${E}'
     poissons_ratio = '${nu}'
+    implicit = false
   []
   [stress]
     type = SmallStrainDegradedElasticPK2Stress_NoSplit
@@ -246,7 +215,7 @@ gamma = 0.8
     d = 'd'
   []
   [fracture_properties]
-    type = ADFractureMaterial
+    type = ADDynamicFractureMaterial
     d = 'd'
     local_dissipation_norm = 8/3
   []
@@ -291,12 +260,6 @@ gamma = 0.8
     value = 0.0
     use_displaced_mesh = false
   []
-  # [fix_x]
-  #   type = ADDirichletBC
-  #   variable = 'disp_x'
-  #   boundary = 'right'
-  #   value = 0.0
-  # []
 []
 
 [Postprocessors]
@@ -312,93 +275,39 @@ gamma = 0.8
   []
   [explicit_dt]
     type = ADBetterCriticalTimeStep
-    execute_on = 'INITIAL TIMESTEP_BEGIN TIMESTEP_END'
-  []
-  [d7]
-    type = FindValueOnLine
-    v = d
-    target = 0.7
-    start_point = '-12 0 0'
-    end_point = '16 0 0'
-    depth = 100
-    error_if_not_found = false
-    default_value = 0
-  []
-  [d5]
-    type = FindValueOnLine
-    v = d
-    target = 0.5
-    start_point = '-12 0 0'
-    end_point = '16 0 0'
-    depth = 100
-    error_if_not_found = false
-    default_value = 0
-  []
-  [d3]
-    type = FindValueOnLine
-    v = d
-    target = 0.3
-    start_point = '-12 0 0'
-    end_point = '16 0 0'
-    depth = 100
-    error_if_not_found = false
-    default_value = 0
-  []
-
-  [d_vel7]
-    type = FindValueOnLineByFVOL
-    v = d
-    w = d_vel
-    target = 0.7
-    start_point = '-12 0 0'
-    end_point = '16 0 0'
-    depth = 100
-    error_if_not_found = false
-    default_value = 0
-  []
-  [d_vel5]
-    type = FindValueOnLineByFVOL
-    v = d
-    w = d_vel
-    target = 0.5
-    start_point = '-12 0 0'
-    end_point = '16 0 0'
-    depth = 100
-    error_if_not_found = false
-    default_value = 0
-  []
-  [d_vel3]
-    type = FindValueOnLineByFVOL
-    v = d
-    w = d_vel
-    target = 0.3
-    start_point = '-12 0 0'
-    end_point = '16 0 0'
-    depth = 100
-    error_if_not_found = false
-    default_value = 0
+    execute_on = 'INITIAL TIMESTEP_END'
   []
 []
 
+# [Problem]
+#   type = FixedPointProblem
+# []
+
 [Executioner]
   type = Transient
+  # type = FixedPointTransient
   solve_type = 'NEWTON'
 
-  # dt = 1e-7
+  dt = 1e-8
   end_time = 1e-4
 
   petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
   petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
 
-  nl_abs_tol = 1e-5
-  nl_rel_tol = 1e-6
-  l_max_its = 100
+  nl_abs_tol = 1e-6
+  nl_rel_tol = 1e-10
   nl_max_its = 100
-  [TimeStepper]
-    type = PostprocessorDT
-    postprocessor = 'explicit_dt'
-    scale = 1
-  []
+
+  # accept_on_max_fp_iteration = true
+  # fp_max_its = 100
+  # fp_tol = 1e-4
+  automatic_scaling = true
+  compute_scaling_once = false
+  # [TimeStepper]
+  #   type = PostprocessorDT
+  #   postprocessor = 'explicit_dt'
+  #   scale = 1
+  # []
   [TimeIntegrator]
     type = NewmarkBeta
     beta = '${beta}'
@@ -412,7 +321,7 @@ gamma = 0.8
     file_base = 'output/dynamic_pmma'
     output_material_properties = true
     show_material_properties = 'E_el_active energy_release_rate dissipation_modulus crack_inertia '
-                               'mobility'
+                               'mobility crack_speed'
     # interval = 10
   []
   [CSV]

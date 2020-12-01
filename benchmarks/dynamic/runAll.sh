@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# ./genMesh.sh
+./genMesh.sh
 # mpirun -n 16 ../../raccoon-opt -i vanilla/quasistatic.i
 # mpirun -n 16 ../../raccoon-opt -i nonvariational/quasistatic.i
 # mpirun -n 16 ../../raccoon-opt -i quasistatic.i
@@ -10,4 +10,5 @@
 
 # mpirun -n 16 ../../raccoon-opt -i vanilla/staggered.i
 # mpirun -n 16 ../../raccoon-opt -i nonvariational/staggered.i
-mpirun -n 16 ../../raccoon-opt -i staggered.i
+mpirun -n 16 ../../raccoon-opt -i nonvariational/staggered.i d_tlower=0.1 d_tupper=0.9
+# mpirun -n 16 ../../raccoon-opt -i staggered.i

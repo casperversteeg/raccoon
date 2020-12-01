@@ -7,7 +7,7 @@ Gc = 0.003
 l = 0.625
 psic = 1.4822e-4
 
-vlim = 2e8
+vlim = 2e9
 label = 'variational'
 
 [GlobalParams]
@@ -207,10 +207,10 @@ label = 'variational'
     type = ADComputeSmallStrain
   []
   [Gc]
-    type = ADQuadraticEnergyReleaseRate
+    type = ADCubicEnergyReleaseRate
     d = 'd'
     static_fracture_energy = '${Gc}'
-    limiting_crack_speed = 2e8
+    limiting_crack_speed = '${vlim}'
     lag_crack_speed = true
   []
   [local_dissipation]

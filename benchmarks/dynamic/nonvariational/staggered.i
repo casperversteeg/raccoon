@@ -7,8 +7,10 @@ Gc = 0.003
 l = 0.625
 psic = 1.4822e-4
 
-vlim = 2e8
-label = 'nonvariational'
+vlim = 1e6
+d_tlower = 0
+d_tupper = 1
+label = 'nonvariational_${d_tlower}_${d_tupper}_poly'
 
 [GlobalParams]
   displacements = 'disp_x disp_y'
@@ -25,7 +27,7 @@ label = 'nonvariational'
   [fracture]
     type = TransientMultiApp
     input_files = 'fracture.i'
-    cli_args = 'Gc=${Gc};l=${l};psic=${psic};vlim=${vlim}'
+    cli_args = 'Gc=${Gc};l=${l};psic=${psic};vlim=${vlim};d_tlower=${d_tlower};d_tupper=${d_tupper}'
     sub_cycling = true
     # catch_up = true
   []
@@ -207,33 +209,43 @@ label = 'nonvariational'
     type = ADComputeSmallStrain
   []
   [Gc]
-    type = ADQuadraticEnergyReleaseRate
+    type = ADConstantEnergyReleaseRate
     d = 'd'
+    # exponent = 3
     static_fracture_energy = '${Gc}'
-    limiting_crack_speed = 2e8
-    lag_crack_speed = true
+    limiting_crack_speed = '${vlim}'
+    # lag_crack_speed = true
+    # damage_threshold_lower = '${d_tlower}'
+    # damage_threshold_upper = '${d_tupper}'
   []
+  # [Gc]
+  #   type = ADPiecewiseLinearEnergyReleaseRate
+  #   d = 'd'
+  #   static_fracture_energy = '${Gc}'
+  #   limiting_crack_speed = '${vlim}'
+  #   # lag_crack_speed = true
+  #   damage_threshold_lower = '${d_tlower}'
+  # []
   [local_dissipation]
-    type = PolynomialLocalDissipation
-    coefficients = '0 2 -1'
+    type = LinearLocalDissipation
     d = 'd'
   []
   [fracture_properties]
     type = ADDynamicFractureMaterial
     d = 'd'
-    local_dissipation_norm = '3.14159265358979'
+    local_dissipation_norm = '8/3'
   []
   [degradation]
-    type = WuDegradation
+    type = LorentzDegradation
     d = 'd'
     residual_degradation = 0
-    a2 = '-0.5'
-    a3 = 0
+    # a2 = '-0.5'
+    # a3 = 0
   []
   [gamma]
     type = CrackSurfaceDensity
     d = 'd'
-    local_dissipation_norm = '3.14159265358979'
+    local_dissipation_norm = '8/3'
   []
 []
 

@@ -1,5 +1,5 @@
 [Mesh]
-  file = 'mesh/dynamic_branching_geom.msh'
+  file = '../output/dynamic_pmma_static.e'
 []
 
 [Variables]
@@ -10,23 +10,13 @@
 [AuxVariables]
   [E_el_active]
     family = MONOMIAL
-    # order = CONSTANT
+    order = FIRST
   []
   [bounds_dummy]
   []
-  # [d_vel]
-  #   family = MONOMIAL
-  #   order = CONSTANT
-  # []
 []
 
 [AuxKernels]
-  # [d_vel]
-  #   type = ADMaterialRealAux
-  #   variable = 'd_vel'
-  #   property = 'crack_speed'
-  #   execute_on = 'TIMESTEP_END'
-  # []
 []
 
 [Bounds]
@@ -46,25 +36,18 @@
 []
 
 [Kernels]
-  [pff_inertia]
-    type = ADDynamicPFFInertia
-    use_displaced_mesh = false
+  [pff_difrate]
+    type = ADDiffusionRate
     variable = 'd'
-  []
-  [pff_grad]
-    type = ADDynamicPFFGradientTimeDerivative
-    variable = 'd'
-    lag_crack_speed = true
+    mu = '${mu}'
   []
   [pff_diff]
-    type = ADDynamicPFFDiffusion
+    type = ADPFFDiffusion
     variable = 'd'
-    lag_crack_speed = true
   []
   [pff_barr]
-    type = ADDynamicPFFBarrier
+    type = ADPFFBarrier
     variable = 'd'
-    lag_crack_speed = true
   []
   [pff_react]
     type = ADPFFReaction
@@ -78,40 +61,32 @@
     type = ADGenericConstantMaterial
     prop_names = 'phase_field_regularization_length critical_fracture_energy'
     prop_values = '${l} ${psic}'
-    implicit = false
   []
   [Gc]
-    type = ADCubicEnergyReleaseRate
+    type = ADConstantEnergyReleaseRate
     d = 'd'
     static_fracture_energy = '${Gc}'
     limiting_crack_speed = '${vlim}'
-    lag_crack_speed = true
   []
   [local_dissipation]
-    type = PolynomialLocalDissipation
-    coefficients = '0 2 -1'
+    type = LinearLocalDissipation
     d = 'd'
   []
   [fracture_properties]
     type = ADDynamicFractureMaterial
     d = 'd'
-    local_dissipation_norm = '3.14159265358979'
+    local_dissipation_norm = 8/3
   []
   [degradation]
-    type = WuDegradation
+    type = LorentzDegradation
     d = 'd'
     residual_degradation = 0
-    a2 = '-0.5'
-    a3 = 0
   []
   [gamma]
     type = CrackSurfaceDensity
     d = 'd'
-    local_dissipation_norm = '3.14159265358979'
+    local_dissipation_norm = 8/3
   []
-[]
-
-[Postprocessors]
 []
 
 [Executioner]
@@ -126,10 +101,6 @@
 
   automatic_scaling = true
   compute_scaling_once = false
-
-  [TimeIntegrator]
-    type = NewmarkBeta
-  []
   [Quadrature]
     type = GAUSS
     order = FIRST

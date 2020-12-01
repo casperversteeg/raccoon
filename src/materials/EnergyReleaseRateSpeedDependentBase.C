@@ -18,6 +18,14 @@ EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::validParams()
                              "local disiipation and mobility");
   params.addRequiredParam<Real>("static_fracture_energy", "Value of Gc when v = 0.");
   params.addRequiredParam<Real>("limiting_crack_speed", "Limiting crack speed.");
+  params.addParam<Real>(
+      "damage_threshold_lower",
+      0.0,
+      "Lower bound on the damage value, above which the crack speed will be computed.");
+  params.addParam<Real>(
+      "damage_threshold_upper",
+      1.0,
+      "Lower bound on the damage value, above which the crack speed will be computed.");
   // params.addRequiredCoupledVar("v", "Crack speed variable name");
   params.addRequiredCoupledVar("d", "damage variable");
   params.addParam<MaterialPropertyName>(
@@ -35,12 +43,15 @@ EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::EnergyReleaseRateSpeedDependent
   : Material(parameters),
     _lag_v(getParam<bool>("lag_crack_speed")),
     _v_name(getParam<MaterialPropertyName>("crack_speed_name")),
+    _d(adCoupledValue("d")),
     _d_dot(adCoupledDot("d")),
     _grad_d(adCoupledGradient("d")),
     _v(declareADProperty<Real>(_v_name)),
     _v_old(_lag_v ? &getMaterialPropertyOld<Real>(_v_name) : nullptr),
     _Gc0(getParam<Real>("static_fracture_energy")),
     _v_lim(getParam<Real>("limiting_crack_speed")),
+    _d_thres_lower(getParam<Real>("damage_threshold_lower")),
+    _d_thres_upper(getParam<Real>("damage_threshold_upper")),
     _Gc(declareGenericProperty<Real, is_ad>(
         getParam<MaterialPropertyName>("energy_release_rate_name"))),
     _dGc_dv(declareGenericProperty<Real, is_ad>(derivativePropertyNameFirst(
@@ -54,13 +65,13 @@ template <bool is_ad>
 void
 EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::initQpStatefulProperties()
 {
-  if (_grad_d[_qp].norm() > TOLERANCE)
+  _v[_qp] = 0.0;
+  if (_d[_qp] > _d_thres_lower && _d[_qp] < _d_thres_upper)
   {
-    _v[_qp] = _d_dot[_qp] / _grad_d[_qp].norm();
-  }
-  else
-  {
-    _v[_qp] = 0.0;
+    if (_grad_d[_qp].norm() > TOLERANCE)
+    {
+      _v[_qp] = _d_dot[_qp] / _grad_d[_qp].norm();
+    }
   }
   computeGc();
 }
@@ -69,14 +80,13 @@ template <bool is_ad>
 void
 EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::computeQpProperties()
 {
-
-  if (_grad_d[_qp].norm() > TOLERANCE)
+  _v[_qp] = 0.0;
+  if (_d[_qp] > _d_thres_lower && _d[_qp] < _d_thres_upper)
   {
-    _v[_qp] = _d_dot[_qp] / _grad_d[_qp].norm();
-  }
-  else
-  {
-    _v[_qp] = 0.0;
+    if (_grad_d[_qp].norm() > TOLERANCE)
+    {
+      _v[_qp] = _d_dot[_qp] / _grad_d[_qp].norm();
+    }
   }
   computeGc();
   // if (_v[_qp] < _v_lim)

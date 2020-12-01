@@ -69,33 +69,43 @@
     implicit = false
   []
   [Gc]
-    type = ADQuadraticEnergyReleaseRate
+    type = ADPolynomialEnergyReleaseRate
     d = 'd'
+    exponent = 3
     static_fracture_energy = '${Gc}'
     limiting_crack_speed = '${vlim}'
     lag_crack_speed = true
+    damage_threshold_lower = '${d_tlower}'
+    damage_threshold_upper = '${d_tupper}'
   []
+  # [Gc]
+  #   type = ADPiecewiseLinearEnergyReleaseRate
+  #   d = 'd'
+  #   static_fracture_energy = '${Gc}'
+  #   limiting_crack_speed = '${vlim}'
+  #   lag_crack_speed = true
+  #   damage_threshold_lower = '${d_tlower}'
+  # []
   [local_dissipation]
-    type = PolynomialLocalDissipation
-    coefficients = '0 2 -1'
+    type = LinearLocalDissipation
     d = 'd'
   []
   [fracture_properties]
     type = ADDynamicFractureMaterial
     d = 'd'
-    local_dissipation_norm = '3.14159265358979'
+    local_dissipation_norm = '8/3'
   []
   [degradation]
-    type = WuDegradation
+    type = LorentzDegradation
     d = 'd'
     residual_degradation = 0
-    a2 = '-0.5'
-    a3 = 0
+    # a2 = '-0.5'
+    # a3 = 0
   []
   [gamma]
     type = CrackSurfaceDensity
     d = 'd'
-    local_dissipation_norm = '3.14159265358979'
+    local_dissipation_norm = '8/3'
   []
 []
 
@@ -112,9 +122,6 @@
   automatic_scaling = true
   compute_scaling_once = false
 
-  [TimeIntegrator]
-    type = NewmarkBeta
-  []
   [Quadrature]
     type = GAUSS
     order = FIRST
