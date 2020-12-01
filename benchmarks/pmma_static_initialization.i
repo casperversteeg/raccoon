@@ -6,38 +6,16 @@ nu = 0.35
 []
 
 [Mesh]
-  [gmg]
-    type = GeneratedMeshGenerator
-    dim = 2
-    xmin = -16
-    xmax = 16
-    ymin = 0
-    ymax = 8
-    nx = 160
-    ny = 40
-    elem_type = TRI3
-  []
-  [pgs]
-    type = SideSetsFromBoundingBoxGenerator
-    input = gmg
-    bottom_left = '-11.99 -0.01 0'
-    top_right = '16.01 0.1 0'
-    boundary_id_old = 'bottom'
-    boundary_id_new = 10
-    block_id = 0
-  []
-  [rbg] # R.I.P. Ruth
-    type = RenameBoundaryGenerator
-    input = pgs
-    old_boundary_id = 10
-    new_boundary_name = 'center'
+  [fmg]
+    type = FileMeshGenerator
+    file = 'mesh/pmma.msh'
   []
   [bbnsg]
     type = BoundingBoxNodeSetGenerator
     bottom_left = '-12.01 -0.01 0'
     top_right = '-11.99 0.01 0'
     new_boundary = 'ctip'
-    input = rbg
+    input = fmg
   []
 []
 

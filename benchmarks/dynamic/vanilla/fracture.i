@@ -46,21 +46,12 @@
 []
 
 [Kernels]
-  [pff_inertia]
-    type = ADDynamicPFFInertia
-    use_displaced_mesh = false
-    variable = 'd'
-  []
-  [pff_grad]
-    type = ADDynamicPFFGradientTimeDerivative
-    variable = 'd'
-  []
   [pff_diff]
-    type = ADDynamicPFFDiffusion
+    type = ADPFFDiffusion
     variable = 'd'
   []
   [pff_barr]
-    type = ADDynamicPFFBarrier
+    type = ADPFFBarrier
     variable = 'd'
   []
   [pff_react]
@@ -85,26 +76,27 @@
     lag_crack_speed = true
   []
   [local_dissipation]
-    type = PolynomialLocalDissipation
-    coefficients = '0 2 -1'
+    type = LinearLocalDissipation
+    # coefficients = '0 2 -1'
     d = 'd'
   []
   [fracture_properties]
     type = ADDynamicFractureMaterial
     d = 'd'
-    local_dissipation_norm = '3.14159265358979'
+    local_dissipation_norm = '8/3'
+    # local_dissipation_norm = '3.14159265358979'
   []
   [degradation]
-    type = WuDegradation
+    type = LorentzDegradation
     d = 'd'
     residual_degradation = 0
-    a2 = '-0.5'
-    a3 = 0
+    # a2 = '-0.5'
+    # a3 = 0
   []
   [gamma]
     type = CrackSurfaceDensity
     d = 'd'
-    local_dissipation_norm = '3.14159265358979'
+    local_dissipation_norm = '8/3'
   []
 []
 
@@ -124,9 +116,6 @@
   automatic_scaling = true
   compute_scaling_once = false
 
-  [TimeIntegrator]
-    type = NewmarkBeta
-  []
   [Quadrature]
     type = GAUSS
     order = FIRST

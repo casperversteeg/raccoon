@@ -1,33 +1,31 @@
-E = 32e3
-rho = 2450e-12
-nu = 0.2
+E = 3.09e3
+rho = 1180e-12
+nu = 0.35
 
-# sigmac = 1.5e-6
-Gc = 0.003
-l = 0.625
-psic = 1.4822e-4
+# sigmac = 75
+psic = 0.91
+Gc = 0.3
+l = 0.04
 
-vlim = 1e7
-label = 'vanilla'
+vlim = 1e6
+
+# mu = 2*Gc*l/c0 / vlim
+mu = 9e-9
 
 [GlobalParams]
   displacements = 'disp_x disp_y'
 []
 
 [Mesh]
-  [fmg]
-    type = FileMeshGenerator
-    file = '../mesh/dynamic_branching_geom.msh'
-  []
+  file = '../output/dynamic_pmma_static.e'
 []
 
 [MultiApps]
   [fracture]
     type = TransientMultiApp
     input_files = 'fracture.i'
-    cli_args = 'Gc=${Gc};l=${l};psic=${psic};vlim=${vlim}'
+    cli_args = 'Gc=${Gc};l=${l};psic=${psic};vlim=${vlim};mu=${mu}'
     sub_cycling = true
-    # catch_up = true
   []
 []
 
@@ -39,13 +37,6 @@ label = 'vanilla'
     source_variable = 'd'
     variable = 'd'
   []
-  # [from_d_vel]
-  #   type = MultiAppCopyTransfer
-  #   multi_app = 'fracture'
-  #   direction = from_multiapp
-  #   source_variable = 'd_vel'
-  #   variable = 'd_vel'
-  # []
   [to_E_el_active]
     type = MultiAppCopyTransfer
     multi_app = 'fracture'
@@ -57,21 +48,23 @@ label = 'vanilla'
 
 [Variables]
   [disp_x]
+    initial_from_file_var = 'disp_x'
   []
   [disp_y]
+    initial_from_file_var = 'disp_y'
   []
 []
 
 [AuxVariables]
-  [stress_11]
+  [stress_xx]
     order = CONSTANT
     family = MONOMIAL
   []
-  [stress_12]
+  [stress_xy]
     order = CONSTANT
     family = MONOMIAL
   []
-  [stress_22]
+  [stress_yy]
     order = CONSTANT
     family = MONOMIAL
   []
@@ -83,35 +76,38 @@ label = 'vanilla'
     order = CONSTANT
     family = MONOMIAL
   []
-  [bounds_dummy]
-  []
-  [vel_x]
-  []
-  [vel_y]
-  []
-  [E_el_active]
-    family = MONOMIAL
-  []
   [d]
   []
   [d_vel]
     order = CONSTANT
     family = MONOMIAL
   []
+  [E_el_active]
+    family = MONOMIAL
+  []
+  [accel_x]
+  []
+  [accel_y]
+  []
+  [vel_x]
+  []
+  [vel_y]
+  []
 []
 
 [Kernels]
   [solid_x]
-    type = ADStressDivergenceTensors
+    type = ADDynamicStressDivergenceTensors
     variable = disp_x
     component = 0
+    static_initialization = true
   []
   [solid_y]
-    type = ADStressDivergenceTensors
+    type = ADDynamicStressDivergenceTensors
     variable = disp_y
     component = 1
+    static_initialization = true
   []
-
   [inertia_x]
     type = ADInertialForce
     variable = disp_x
@@ -133,7 +129,7 @@ label = 'vanilla'
   [stressxx]
     type = ADRankTwoAux
     rank_two_tensor = stress
-    variable = stress_11
+    variable = stress_xx
     index_i = 0
     index_j = 0
     execute_on = TIMESTEP_END
@@ -141,7 +137,7 @@ label = 'vanilla'
   [stressxy]
     type = ADRankTwoAux
     rank_two_tensor = stress
-    variable = stress_12
+    variable = stress_xy
     index_i = 0
     index_j = 1
     execute_on = TIMESTEP_END
@@ -149,7 +145,7 @@ label = 'vanilla'
   [stressyy]
     type = ADRankTwoAux
     rank_two_tensor = stress
-    variable = stress_22
+    variable = stress_yy
     index_i = 1
     index_j = 1
     execute_on = TIMESTEP_END
@@ -166,13 +162,27 @@ label = 'vanilla'
     method = max
     execute_on = 'INITIAL'
   []
+  [ax]
+    type = TestNewmarkTI
+    variable = 'accel_x'
+    displacement = 'disp_x'
+    first = false
+    execute_on = 'TIMESTEP_END'
+  []
+  [ay]
+    type = TestNewmarkTI
+    variable = 'accel_y'
+    displacement = 'disp_y'
+    first = false
+    execute_on = 'TIMESTEP_END'
+  []
   [vx]
     type = TestNewmarkTI
     variable = 'vel_x'
     displacement = 'disp_x'
     execute_on = 'TIMESTEP_END'
   []
-  [vy]
+  [yx]
     type = TestNewmarkTI
     variable = 'vel_y'
     displacement = 'disp_y'
@@ -191,76 +201,59 @@ label = 'vanilla'
     type = ADGenericConstantMaterial
     prop_names = 'phase_field_regularization_length critical_fracture_energy density'
     prop_values = '${l} ${psic} ${rho}'
-    implicit = false
   []
   [elasticity_tensor]
     type = ADComputeIsotropicElasticityTensor
     youngs_modulus = '${E}'
     poissons_ratio = '${nu}'
-    implicit = false
   []
   [stress]
-    type = SmallStrainDegradedElasticPK2Stress_StrainSpectral
+    type = SmallStrainDegradedElasticPK2Stress_NoSplit
     d = 'd'
   []
   [strain]
     type = ADComputeSmallStrain
-  []
-  [GcQ]
-    type = ADQuadraticEnergyReleaseRate
-    d = 'd'
-    static_fracture_energy = '${Gc}'
-    limiting_crack_speed = '${vlim}'
-    # lag_crack_speed = true
-    energy_release_rate_name = 'var_energy_release_rate'
-    crack_speed_name = 'var_crack_speed'
   []
   [Gc]
     type = ADConstantEnergyReleaseRate
     d = 'd'
     static_fracture_energy = '${Gc}'
     limiting_crack_speed = '${vlim}'
-    # lag_crack_speed = true
   []
   [local_dissipation]
     type = LinearLocalDissipation
-    # coefficients = '0 2 -1'
     d = 'd'
   []
   [fracture_properties]
     type = ADDynamicFractureMaterial
     d = 'd'
-    local_dissipation_norm = '8/3'
-    # local_dissipation_norm = '3.14159265358979'
+    local_dissipation_norm = 8/3
   []
   [degradation]
     type = LorentzDegradation
     d = 'd'
     residual_degradation = 0
-    # a2 = '-0.5'
-    # a3 = 0
   []
   [gamma]
-    type = CrackSurfaceDensity
+    type = CrackSurfaceDensityDot
     d = 'd'
-    local_dissipation_norm = '8/3'
+    local_dissipation_norm = 8/3
   []
 []
 
 [BCs]
-  [traction_top]
-    type = ADPressure
-    boundary = 'top'
+  [top_BC]
+    type = ADDirichletBC
     variable = 'disp_y'
-    component = 1
-    constant = -1
+    boundary = 'top'
+    value = 0.06
     use_displaced_mesh = false
   []
-  [y_disp]
+  [fix_y]
     type = ADDirichletBC
-    boundary = 'center'
     variable = 'disp_y'
-    value = 0
+    boundary = 'center'
+    value = 0.0
     use_displaced_mesh = false
   []
 []
@@ -272,31 +265,20 @@ label = 'vanilla'
   [kinetic_energy]
     type = ADKineticEnergy
   []
-  [explicit_dt]
-    type = ADBetterCriticalTimeStep
-    density_name = 'density'
-    execute_on = 'INITIAL TIMESTEP_END'
-  []
   [fracture_energy]
     type = ADFractureEnergy
     d = 'd'
   []
-  [d7]
-    type = FindValueOnLine
-    v = d
-    target = 0.7
-    start_point = '0 0 0'
-    end_point = '50 0 0'
-    depth = 100
-    error_if_not_found = false
-    default_value = 0
+  [explicit_dt]
+    type = ADBetterCriticalTimeStep
+    execute_on = 'INITIAL TIMESTEP_BEGIN TIMESTEP_END'
   []
   [d5]
     type = FindValueOnLine
     v = d
     target = 0.5
-    start_point = '0 0 0'
-    end_point = '50 0 0'
+    start_point = '-12 0 0'
+    end_point = '16 0 0'
     depth = 100
     error_if_not_found = false
     default_value = 0
@@ -305,20 +287,8 @@ label = 'vanilla'
     type = FindValueOnLine
     v = d
     target = 0.3
-    start_point = '0 0 0'
-    end_point = '50 0 0'
-    depth = 100
-    error_if_not_found = false
-    default_value = 0
-  []
-
-  [d_vel7]
-    type = FindValueOnLineByFVOL
-    v = d
-    w = d_vel
-    target = 0.7
-    start_point = '0 0 0'
-    end_point = '50 0 0'
+    start_point = '-12 0 0'
+    end_point = '16 0 0'
     depth = 100
     error_if_not_found = false
     default_value = 0
@@ -328,8 +298,8 @@ label = 'vanilla'
     v = d
     w = d_vel
     target = 0.5
-    start_point = '0 0 0'
-    end_point = '50 0 0'
+    start_point = '-12 0 0'
+    end_point = '16 0 0'
     depth = 100
     error_if_not_found = false
     default_value = 0
@@ -339,8 +309,8 @@ label = 'vanilla'
     v = d
     w = d_vel
     target = 0.3
-    start_point = '0 0 0'
-    end_point = '50 0 0'
+    start_point = '-12 0 0'
+    end_point = '16 0 0'
     depth = 100
     error_if_not_found = false
     default_value = 0
@@ -349,16 +319,12 @@ label = 'vanilla'
 
 [Executioner]
   type = Transient
-  # solve_type = 'NEWTON'
-
-  dt = 1e-7
-  end_time = 80e-6
+  end_time = 8e-5
 
   nl_abs_tol = 1e-6
-  nl_rel_tol = 1e-10
-  # l_max_its = 100
-  nl_max_its = 100
-
+  l_abs_tol = 1e-10
+  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
+  # petsc_options_value = 'lu       superlu_dist'
   [TimeStepper]
     type = PostprocessorDT
     postprocessor = 'explicit_dt'
@@ -369,28 +335,23 @@ label = 'vanilla'
     solve_type = lumped
   []
   [Quadrature]
-    type = GAUSS
     order = SECOND
   []
 []
 
 [Outputs]
-  print_linear_residuals = false
+  # print_linear_residuals = false
+  # hide = 'explicit_dt'
   [Exodus]
     type = Exodus
-    file_base = 'output/dynamic_branching_staggered_${label}'
+    file_base = 'output/dynamic_pmma_mu_${mu}'
     output_material_properties = true
-    show_material_properties = 'energy_release_rate dissipation_modulus crack_inertia crack_speed '
-                               'var_energy_release_rate'
+    show_material_properties = 'energy_release_rate dissipation_modulus crack_inertia mobility '
+                               'crack_speed'
     interval = 10
-  []
-  [Console]
-    type = Console
-    outlier_variable_norms = false
-    # interval = 10
   []
   [CSV]
     type = CSV
-    file_base = 'output/dynamic_branching_staggered_${label}_pp'
+    file_base = 'output/dynamic_pmma_pp_mu_${mu}'
   []
 []
