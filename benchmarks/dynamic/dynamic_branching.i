@@ -102,22 +102,23 @@ gamma = 0.8
   []
 
   [inertia_x]
-    type = InertialForce
+    type = ADInertialForce
     variable = disp_x
     alpha = '${alpha}'
     use_displaced_mesh = false
   []
   [inertia_y]
-    type = InertialForce
+    type = ADInertialForce
     variable = disp_y
     alpha = '${alpha}'
     use_displaced_mesh = false
   []
 
-  # [pff_inertia]
-  #   type = ADDynamicPFFInertia
-  #   variable = 'd'
-  # []
+  [pff_inertia]
+    type = ADDynamicPFFInertia
+    use_displaced_mesh = false
+    variable = 'd'
+  []
   [pff_grad]
     type = ADDynamicPFFGradientTimeDerivative
     variable = 'd'
@@ -195,14 +196,9 @@ gamma = 0.8
 []
 
 [Materials]
-  [dens]
-    type = GenericConstantMaterial
-    prop_names = 'density'
-    prop_values = '${rho}'
-  []
   [const]
     type = ADGenericConstantMaterial
-    prop_names = 'phase_field_regularization_length critical_fracture_energy dens_ad'
+    prop_names = 'phase_field_regularization_length critical_fracture_energy density'
     prop_values = '${l} ${psic} ${rho}'
   []
   [elasticity_tensor]
@@ -211,41 +207,40 @@ gamma = 0.8
     poissons_ratio = '${nu}'
   []
   [stress]
-    type = SmallStrainDegradedElasticPK2Stress_NoSplit
+    type = SmallStrainDegradedElasticPK2Stress_StrainVolDev
     d = 'd'
   []
   [strain]
     type = ADComputeSmallStrain
   []
   [Gc]
-    type = ADLogarithmicEnergyReleaseRate
+    type = ADQuadraticEnergyReleaseRate
     d = 'd'
     static_fracture_energy = '${Gc}'
-<<<<<<< HEAD
-    limiting_crack_speed = 1e6
-=======
     limiting_crack_speed = 2e8
     lag_crack_speed = true
->>>>>>> stagger swagger matters naught
   []
   [local_dissipation]
-    type = LinearLocalDissipation
+    type = PolynomialLocalDissipation
+    coefficients = '0 2 -1'
     d = 'd'
   []
   [fracture_properties]
     type = ADDynamicFractureMaterial
     d = 'd'
-    local_dissipation_norm = 8/3
+    local_dissipation_norm = '3.14159265358979'
   []
   [degradation]
-    type = LorentzDegradation
+    type = WuDegradation
     d = 'd'
     residual_degradation = 0
+    a2 = '-0.5'
+    a3 = 0
   []
   [gamma]
     type = CrackSurfaceDensity
     d = 'd'
-    local_dissipation_norm = 8/3
+    local_dissipation_norm = '3.14159265358979'
   []
 []
 
@@ -269,8 +264,6 @@ gamma = 0.8
 []
 
 [Postprocessors]
-<<<<<<< HEAD
-=======
   [elastic_energy] # The degraded energy
     type = ADStrainEnergy
   []
@@ -281,7 +274,6 @@ gamma = 0.8
     type = ADFractureEnergy
     d = 'd'
   []
->>>>>>> stagger swagger matters naught
   [explicit_dt]
     type = ADBetterCriticalTimeStep
     # density_name = 'dens_ad'
@@ -367,6 +359,8 @@ gamma = 0.8
   # accept_on_max_fp_iteration = true
   # fp_max_its = 100
   # fp_tol = 1e-4
+  automatic_scaling = true
+  compute_scaling_once = false
 
   petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
   petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
@@ -389,8 +383,9 @@ gamma = 0.8
     type = Exodus
     file_base = 'output/dynamic_branching'
     output_material_properties = true
-    show_material_properties = 'E_el_active energy_release_rate'
-    interval = 10
+    show_material_properties = 'E_el_active energy_release_rate dissipation_modulus crack_inertia '
+                               'mobility'
+    # interval = 10
   []
   [Console]
     type = Console

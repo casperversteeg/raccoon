@@ -3,6 +3,7 @@
 //* http://dolbow.pratt.duke.edu
 
 #include "ADDynamicPFFGradientTimeDerivative.h"
+#include "libmesh/libmesh_common.h"
 
 registerADMooseObject("raccoonApp", ADDynamicPFFGradientTimeDerivative);
 
@@ -47,16 +48,8 @@ ADDynamicPFFGradientTimeDerivative::ADDynamicPFFGradientTimeDerivative(
 ADReal
 ADDynamicPFFGradientTimeDerivative::precomputeQpResidual()
 {
-<<<<<<< HEAD
-  if (_grad_u[_qp].norm() > 0.0)
-=======
   if (_grad_u[_qp].norm() > TOLERANCE)
->>>>>>> stagger swagger matters naught
   {
-<<<<<<< HEAD
-    ADReal coef = _kappa[_qp] * _dM[_qp] - _dissipation[_qp] + _inertia[_qp] * _crack_speed[_qp];
-    return -coef * (_grad_u[_qp] * _grad_d_dot[_qp]) / _grad_u[_qp].norm();
-=======
     ADReal V;
     if (_lag_v)
       V = (*_crack_speed_old)[_qp];
@@ -64,7 +57,6 @@ ADDynamicPFFGradientTimeDerivative::precomputeQpResidual()
       V = (*_crack_speed)[_qp];
     ADReal coef = _kappa[_qp] * _dM[_qp] - _dissipation[_qp] - _inertia[_qp] * V;
     return coef * (_grad_u[_qp] * _grad_d_dot[_qp]) / _grad_u[_qp].norm();
->>>>>>> stagger swagger improved lagger
   }
   else
   {

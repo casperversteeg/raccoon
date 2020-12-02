@@ -186,35 +186,48 @@ label = 'vanilla'
   [strain]
     type = ADComputeSmallStrain
   []
-  [local_dissipation]
-    type = LinearLocalDissipation
-    d = 'd'
-  []
   [Gc]
     type = ADConstantEnergyReleaseRate
     d = 'd'
     static_fracture_energy = '${Gc}'
-<<<<<<< HEAD
-    limiting_crack_speed = 200
-=======
     limiting_crack_speed = 5000
   []
   [local_dissipation]
     type = PolynomialLocalDissipation
     coefficients = '0 2 -1'
     d = 'd'
->>>>>>> stagger swagger matters naught
   []
   [fracture_properties]
     type = ADFractureMaterial
-    local_dissipation_norm = 8/3
-    # constant_in_time = true
+    d = 'd'
+    local_dissipation_norm = '3.14159265358979'
   []
   [degradation]
-    type = LorentzDegradation
+    type = WuDegradation
     d = 'd'
     residual_degradation = 0
+    a2 = '-0.5'
+    a3 = 0
   []
+  [gamma]
+    type = CrackSurfaceDensity
+    d = 'd'
+    local_dissipation_norm = '3.14159265358979'
+  []
+  # [local_dissipation]
+  #   type = LinearLocalDissipation
+  #   d = 'd'
+  # []
+  # [fracture_properties]
+  #   type = ADFractureMaterial
+  #   local_dissipation_norm = 8/3
+  #   # constant_in_time = true
+  # []
+  # [degradation]
+  #   type = LorentzDegradation
+  #   d = 'd'
+  #   residual_degradation = 0
+  # []
 []
 
 [BCs]
@@ -242,6 +255,13 @@ label = 'vanilla'
 []
 
 [Postprocessors]
+  [elastic_energy] # The degraded energy
+    type = ADStrainEnergy
+  []
+  [fracture_energy]
+    type = ADFractureEnergy
+    d = 'd'
+  []
   [d7]
     type = FindValueOnLine
     v = d
@@ -317,30 +337,20 @@ label = 'vanilla'
   solve_type = 'NEWTON'
 
   dt = 1e-4
-<<<<<<< HEAD
-  end_time = 8e-3
-=======
   end_time = 10e-3
   automatic_scaling = true
   # compute_scaling_once = false
->>>>>>> stagger swagger matters naught
 
   petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
   petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
 
-<<<<<<< HEAD
-  nl_abs_tol = 1e-8
-  nl_rel_tol = 1e-6
-  l_max_its = 100
-=======
   nl_abs_tol = 1e-6
   nl_rel_tol = 1e-8
   # l_max_its = 100
->>>>>>> stagger swagger matters naught
   nl_max_its = 100
 
   accept_on_max_fp_iteration = true
-  fp_max_its = 3
+  fp_max_its = 1
   fp_tol = 1e-4
 []
 
@@ -348,9 +358,9 @@ label = 'vanilla'
   print_linear_residuals = false
   [Exodus]
     type = Exodus
-    file_base = '../output/quasistatic_${label}'
+    file_base = 'output/quasistatic_${label}'
     output_material_properties = true
-    show_material_properties = 'E_el_active energy_release_rate'
+    show_material_properties = 'E_el_active energy_release_rate crack_speed'
     # interval = 10
   []
   [Console]
@@ -360,6 +370,6 @@ label = 'vanilla'
   []
   [CSV]
     type = CSV
-    file_base = '../output/quasistatic_${label}_pp'
+    file_base = 'output/quasistatic_${label}_pp'
   []
 []

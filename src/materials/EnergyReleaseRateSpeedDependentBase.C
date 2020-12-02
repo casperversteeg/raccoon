@@ -4,6 +4,7 @@
 
 #include "EnergyReleaseRateSpeedDependentBase.h"
 #include "metaphysicl/raw_type.h"
+#include "libmesh/libmesh_common.h"
 
 // registerMooseObject("raccoonApp", EnergyReleaseRateSpeedDependentBase);
 // registerMooseObject("raccoonApp", ADEnergyReleaseRateSpeedDependentBase);
@@ -31,18 +32,22 @@ EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::validParams()
       "energy_release_rate_name", "energy_release_rate", "Name of the fracture energy");
   params.addParam<MaterialPropertyName>(
       "crack_speed_name", "crack_speed", "Name of the crack tip speed material");
-
+  params.addParam<bool>("lag_crack_speed",
+                        false,
+                        "Whether to use the crack speed from the previous step in this solve");
   return params;
 }
 template <bool is_ad>
 EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::EnergyReleaseRateSpeedDependentBaseTempl(
     const InputParameters & parameters)
   : Material(parameters),
+    _lag_v(getParam<bool>("lag_crack_speed")),
     _v_name(getParam<MaterialPropertyName>("crack_speed_name")),
     _d(adCoupledValue("d")),
     _d_dot(adCoupledDot("d")),
     _grad_d(adCoupledGradient("d")),
     _v(declareADProperty<Real>(_v_name)),
+    _v_old(_lag_v ? &getMaterialPropertyOld<Real>(_v_name) : nullptr),
     _Gc0(getParam<Real>("static_fracture_energy")),
     _v_lim(getParam<Real>("limiting_crack_speed")),
     _d_thres_lower(getParam<Real>("damage_threshold_lower")),
@@ -58,12 +63,6 @@ EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::EnergyReleaseRateSpeedDependent
 
 template <bool is_ad>
 void
-<<<<<<< HEAD
-EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::computeQpProperties()
-{
-
-  if (_grad_d[_qp].norm() > 0.0)
-=======
 EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::initQpStatefulProperties()
 {
   _v[_qp] = 0.0;
@@ -81,18 +80,8 @@ template <bool is_ad>
 void
 EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::computeQpProperties()
 {
-<<<<<<< HEAD
-
-  if (_grad_d[_qp].norm() > TOLERANCE)
->>>>>>> stagger swagger matters naught
-  {
-    _v[_qp] = _d_dot[_qp] / _grad_d[_qp].norm();
-  }
-  else
-=======
   _v[_qp] = 0.0;
   if (_d[_qp] > _d_thres_lower && _d[_qp] < _d_thres_upper)
->>>>>>> release rate mumbo jumbo
   {
     if (_grad_d[_qp].norm() > TOLERANCE)
     {

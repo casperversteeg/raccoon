@@ -26,8 +26,9 @@ template <bool is_ad>
 void
 QuadraticEnergyReleaseRateTempl<is_ad>::computeGc()
 {
-  _Gc[_qp] = _Gc0 * (1 + (_v[_qp] / _v_lim) * (_v[_qp] / _v_lim));
-  _dGc_dv[_qp] = 2 * _Gc0 * (_v[_qp] / _v_lim) / _v_lim;
+  ADReal v = (_lag_v ? (*_v_old)[_qp] : _v[_qp]);
+  _Gc[_qp] = _Gc0 * (1 + (v / _v_lim) * (v / _v_lim));
+  _dGc_dv[_qp] = 2 * _Gc0 * (v / _v_lim) / _v_lim;
   _d2Gc_dv2[_qp] = 2 * _Gc0 / _v_lim / _v_lim;
 }
 

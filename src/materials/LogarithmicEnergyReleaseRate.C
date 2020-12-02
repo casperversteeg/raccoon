@@ -26,9 +26,10 @@ template <bool is_ad>
 void
 LogarithmicEnergyReleaseRateTempl<is_ad>::computeGc()
 {
-  _Gc[_qp] = _Gc0 * (1 + std::log(_v_lim / (_v_lim - _v[_qp])));
-  _dGc_dv[_qp] = _Gc0 / (_v_lim - _v[_qp]);
-  _d2Gc_dv2[_qp] = _Gc0 / (_v_lim - _v[_qp]) / (_v_lim - _v[_qp]);
+  ADReal v = (_lag_v ? (*_v_old)[_qp] : _v[_qp]);
+  _Gc[_qp] = _Gc0 * (1 + std::log(_v_lim / (_v_lim - v)));
+  _dGc_dv[_qp] = _Gc0 / (_v_lim - v);
+  _d2Gc_dv2[_qp] = _Gc0 / (_v_lim - v) / (_v_lim - v);
 }
 
 // template class LogarithmicEnergyReleaseRateTempl<false>;
