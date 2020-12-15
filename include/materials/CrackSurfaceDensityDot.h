@@ -23,7 +23,7 @@ protected:
 
   const ADVariableValue & _d_dot;
   // const ADVariableSecond & _lap_d;
-  const VariableGradient & _grad_d_dot;
+  const ADVariableGradient & _grad_d_dot;
 
   /// local dissipation function
   const ADMaterialProperty<Real> & _dw_dd;

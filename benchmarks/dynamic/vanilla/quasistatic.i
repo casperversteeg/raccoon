@@ -198,7 +198,7 @@ label = 'vanilla'
     d = 'd'
   []
   [fracture_properties]
-    type = ADFractureMaterial
+    type = ADDynamicFractureMaterial
     d = 'd'
     local_dissipation_norm = '3.14159265358979'
   []
@@ -210,7 +210,7 @@ label = 'vanilla'
     a3 = 0
   []
   [gamma]
-    type = CrackSurfaceDensity
+    type = CrackSurfaceDensityDot
     d = 'd'
     local_dissipation_norm = '3.14159265358979'
   []
@@ -336,7 +336,7 @@ label = 'vanilla'
   type = FixedPointTransient
   solve_type = 'NEWTON'
 
-  dt = 1e-4
+  dt = 2e-4
   end_time = 10e-3
   automatic_scaling = true
   # compute_scaling_once = false
@@ -360,7 +360,8 @@ label = 'vanilla'
     type = Exodus
     file_base = 'output/quasistatic_${label}'
     output_material_properties = true
-    show_material_properties = 'E_el_active energy_release_rate crack_speed'
+    show_material_properties = 'E_el_active energy_release_rate crack_speed dissipation_modulus '
+                               'gamma gamma_dot'
     # interval = 10
   []
   [Console]

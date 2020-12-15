@@ -28,6 +28,7 @@ protected:
 
   /// Crack surface density
   const ADMaterialProperty<Real> & _gamma;
+  const ADMaterialProperty<Real> & _gamma_dot;
 
   /// Fracture energy release rate
   const GenericMaterialProperty<Real, is_ad> & _Gc;

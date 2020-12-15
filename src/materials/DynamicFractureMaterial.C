@@ -24,6 +24,10 @@ DynamicFractureMaterialTempl<is_ad>::validParams()
       "gamma",
       "Name of material property holding the crack surface density");
   params.addParam<MaterialPropertyName>(
+      "crack_surface_density_dot_name",
+      "gamma",
+      "Name of material property holding the crack surface density time derivative");
+  params.addParam<MaterialPropertyName>(
       "energy_release_rate_name", "energy_release_rate", "Name of material property holding Gc");
   params.addParam<MaterialPropertyName>(
       "inertia_name", "crack_inertia", "name of the material that holds the crack inertia");
@@ -45,6 +49,7 @@ DynamicFractureMaterialTempl<is_ad>::DynamicFractureMaterialTempl(
     _v_name(getParam<MaterialPropertyName>("crack_speed_name")),
     _grad_d(coupledGenericGradient<is_ad>("d")),
     _gamma(getADMaterialProperty<Real>("crack_surface_density_name")),
+    _gamma_dot(getADMaterialProperty<Real>("crack_surface_density_dot_name")),
     _Gc(getADMaterialProperty<Real>("energy_release_rate_name")),
     _dGc_dv(getADMaterialProperty<Real>(derivativePropertyNameFirst(
         getParam<MaterialPropertyName>("energy_release_rate_name"), _v_name))),
@@ -64,10 +69,12 @@ void
 DynamicFractureMaterialTempl<is_ad>::initQpStatefulProperties()
 {
   FractureMaterialTempl<is_ad>::initQpStatefulProperties();
-  if (_grad_d[_qp].norm() > TOLERANCE)
+  if (_grad_d[_qp].norm() > 5.0)
   {
     _damage_inertia[_qp] = _gamma[_qp] * _d2Gc_dv2[_qp] / _grad_d[_qp].norm_sq();
-    _dissipation[_qp] = _gamma[_qp] * _dGc_dv[_qp] / _grad_d[_qp].norm_sq();
+    _dissipation[_qp] =
+        _gamma_dot[_qp] * _Gc[_qp] *
+        (1 + _gamma_dot[_qp]); // _gamma[_qp] * _dGc_dv[_qp] / _grad_d[_qp].norm_sq();
   }
   else
   {
@@ -84,10 +91,12 @@ DynamicFractureMaterialTempl<is_ad>::computeQpProperties()
   Real c0 = _w_norm.value(_t, _q_point[_qp]);
 
   _dM_dv[_qp] = _dGc_dv[_qp] / c0 / _L[_qp];
-  if (_grad_d[_qp].norm() > TOLERANCE)
+  if (_grad_d[_qp].norm() > 5.0)
   {
     _damage_inertia[_qp] = _gamma[_qp] * _d2Gc_dv2[_qp] / _grad_d[_qp].norm_sq();
-    _dissipation[_qp] = _gamma[_qp] * _dGc_dv[_qp] / _grad_d[_qp].norm_sq();
+    _dissipation[_qp] =
+        _gamma_dot[_qp] * _Gc[_qp] *
+        (1 + _gamma_dot[_qp]); //_gamma[_qp] * _dGc_dv[_qp] / _grad_d[_qp].norm_sq();
   }
   else
   {

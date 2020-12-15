@@ -26,7 +26,7 @@ CrackSurfaceDensityDot::CrackSurfaceDensityDot(const InputParameters & parameter
         declareADProperty<Real>(getParam<MaterialPropertyName>("crack_surface_density_dot_name"))),
     _d_dot(adCoupledDot("d")),
     // _lap_d(this->getVar("d", 0)->adSecondSln()),
-    _grad_d_dot(coupledGradientDot("d")),
+    _grad_d_dot(adCoupledGradientDot("d")),
     _dw_dd(getADMaterialProperty<Real>(derivativePropertyNameFirst(
         getParam<MaterialPropertyName>("local_dissipation_name"), this->getVar("d", 0)->name())))
 {
