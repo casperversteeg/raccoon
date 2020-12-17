@@ -273,53 +273,53 @@ mu = 9e-9
     type = ADBetterCriticalTimeStep
     execute_on = 'INITIAL TIMESTEP_BEGIN TIMESTEP_END'
   []
-  [d5]
-    type = FindValueOnLine
-    v = d
-    target = 0.5
-    start_point = '-12 0 0'
-    end_point = '16 0 0'
-    depth = 100
-    error_if_not_found = false
-    default_value = 0
-  []
-  [d3]
-    type = FindValueOnLine
-    v = d
-    target = 0.3
-    start_point = '-12 0 0'
-    end_point = '16 0 0'
-    depth = 100
-    error_if_not_found = false
-    default_value = 0
-  []
-  [d_vel5]
-    type = FindValueOnLineByFVOL
-    v = d
-    w = d_vel
-    target = 0.5
-    start_point = '-12 0 0'
-    end_point = '16 0 0'
-    depth = 100
-    error_if_not_found = false
-    default_value = 0
-  []
-  [d_vel3]
-    type = FindValueOnLineByFVOL
-    v = d
-    w = d_vel
-    target = 0.3
-    start_point = '-12 0 0'
-    end_point = '16 0 0'
-    depth = 100
-    error_if_not_found = false
-    default_value = 0
-  []
+  # [d5]
+  #   type = FindValueOnLine
+  #   v = d
+  #   target = 0.5
+  #   start_point = '-12 0 0'
+  #   end_point = '16 0 0'
+  #   depth = 100
+  #   error_if_not_found = false
+  #   default_value = 0
+  # []
+  # [d3]
+  #   type = FindValueOnLine
+  #   v = d
+  #   target = 0.3
+  #   start_point = '-12 0 0'
+  #   end_point = '16 0 0'
+  #   depth = 100
+  #   error_if_not_found = false
+  #   default_value = 0
+  # []
+  # [d_vel5]
+  #   type = FindValueOnLineByFVOL
+  #   v = d
+  #   w = d_vel
+  #   target = 0.5
+  #   start_point = '-12 0 0'
+  #   end_point = '16 0 0'
+  #   depth = 100
+  #   error_if_not_found = false
+  #   default_value = 0
+  # []
+  # [d_vel3]
+  #   type = FindValueOnLineByFVOL
+  #   v = d
+  #   w = d_vel
+  #   target = 0.3
+  #   start_point = '-12 0 0'
+  #   end_point = '16 0 0'
+  #   depth = 100
+  #   error_if_not_found = false
+  #   default_value = 0
+  # []
 []
 
 [Executioner]
   type = Transient
-  end_time = 8e-5
+  end_time = 2e-6
 
   nl_abs_tol = 1e-6
   l_abs_tol = 1e-10
@@ -347,7 +347,7 @@ mu = 9e-9
     file_base = 'output/dynamic_pmma_mu_${mu}'
     output_material_properties = true
     show_material_properties = 'energy_release_rate dissipation_modulus crack_inertia mobility '
-                               'crack_speed'
+                               'crack_speed gamma gamma_dot'
     interval = 10
   []
   [CSV]

@@ -73,8 +73,7 @@ DynamicFractureMaterialTempl<is_ad>::initQpStatefulProperties()
   {
     _damage_inertia[_qp] = _gamma[_qp] * _d2Gc_dv2[_qp] / _grad_d[_qp].norm_sq();
     _dissipation[_qp] =
-        _gamma_dot[_qp] * _Gc[_qp] *
-        (1 + _gamma_dot[_qp]); // _gamma[_qp] * _dGc_dv[_qp] / _grad_d[_qp].norm_sq();
+        _gamma_dot[_qp] * _Gc[_qp]; // _gamma[_qp] * _dGc_dv[_qp] / _grad_d[_qp].norm_sq();
   }
   else
   {
@@ -95,8 +94,7 @@ DynamicFractureMaterialTempl<is_ad>::computeQpProperties()
   {
     _damage_inertia[_qp] = _gamma[_qp] * _d2Gc_dv2[_qp] / _grad_d[_qp].norm_sq();
     _dissipation[_qp] =
-        _gamma_dot[_qp] * _Gc[_qp] *
-        (1 + _gamma_dot[_qp]); //_gamma[_qp] * _dGc_dv[_qp] / _grad_d[_qp].norm_sq();
+        _gamma_dot[_qp] * _Gc[_qp]; //_gamma[_qp] * _dGc_dv[_qp] / _grad_d[_qp].norm_sq();
   }
   else
   {

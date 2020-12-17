@@ -5,16 +5,15 @@ nu = 0
 # sigmac = 1.5
 psic = 1.125
 Gc = 0.45
-l = 0.02
+l = 0.021
 
 mu = 0.0
 
-# alpha = -0.3
-# beta = 0.4225
-# gamma = 0.8
-alpha = 0
-beta = 0.25
-gamma = 0.5
+alpha = -0.3
+# beta = 0.25
+# gamma = 0.5
+beta = 0.4225
+gamma = 0.8
 
 [Mesh]
   [gmg]
@@ -22,7 +21,7 @@ gamma = 0.5
     dim = 1
     xmin = 0
     xmax = 1
-    nx = 500
+    nx = 400
   []
 []
 
@@ -41,8 +40,15 @@ gamma = 0.5
   [disp_x]
   []
   [d]
-  []
-  [G]
+    [InitialCondition]
+      type = BoundingBoxIC
+      variable = 'd'
+      x1 = -0.1
+      x2 = 0.025
+      y1 = -0.1
+      y2 = 0.1
+      inside = 1
+    []
   []
 []
 
@@ -51,11 +57,7 @@ gamma = 0.5
     order = CONSTANT
     family = MONOMIAL
   []
-  [bounds_d]
-  []
-  [bounds_g]
-  []
-  [force]
+  [bounds_dummy]
   []
   [vel_x]
   []
@@ -65,15 +67,7 @@ gamma = 0.5
     order = CONSTANT
     family = MONOMIAL
   []
-  [grad_d]
-    order = CONSTANT
-    family = MONOMIAL
-  []
   [d_vel]
-    order = CONSTANT
-    family = MONOMIAL
-  []
-  [gamma_dot]
     order = CONSTANT
     family = MONOMIAL
   []
@@ -82,29 +76,16 @@ gamma = 0.5
 [Bounds]
   [irreversibility]
     type = VariableOldValueBoundsAux
-    variable = 'bounds_g'
-    bounded_variable = 'G'
+    variable = 'bounds_dummy'
+    bounded_variable = 'd'
     bound_type = lower
   []
-  # [irreversibility_d]
-  #   type = VariableOldValueBoundsAux
-  #   variable = 'bounds_d'
-  #   bounded_variable = 'd'
-  #   bound_type = lower
-  # []
   [upper]
     type = ConstantBoundsAux
-    variable = 'bounds_d'
+    variable = 'bounds_dummy'
     bounded_variable = 'd'
     bound_type = upper
     bound_value = 1
-  []
-  [lower]
-    type = ConstantBoundsAux
-    variable = 'bounds_d'
-    bounded_variable = 'd'
-    bound_type = lower
-    bound_value = 0
   []
 []
 
@@ -140,28 +121,6 @@ gamma = 0.5
     variable = 'd'
     driving_energy_uo = 'E_el_active'
   []
-  [disp]
-    type = MatReaction
-    variable = 'G'
-    v = 'd'
-    mob_name = '15.915494309'
-  []
-  [grad_d]
-    type = MatGradSquareCoupled
-    variable = 'G'
-    elec_potential = 'd'
-    prefactor = '0.006366198'
-  []
-  # [gamma_src]
-  #   type = ADMaterialPropertyUserObjectSource
-  #   variable = 'G'
-  #   uo_name = 'gamma'
-  # []
-  [gamma_reac]
-    type = ADMatReaction
-    variable = 'G'
-    mob_name = '-1'
-  []
 []
 
 [AuxKernels]
@@ -190,28 +149,11 @@ gamma = 0.5
     gradient_variable = 'd_dot'
     component = 'x'
   []
-  [grad_d]
-    type = VariableGradientComponent
-    variable = 'grad_d'
-    gradient_variable = 'd'
-    component = 'x'
-  []
   [d_vel]
     type = ADMaterialRealAux
     variable = 'd_vel'
     property = 'crack_speed'
     execute_on = 'TIMESTEP_END'
-  []
-  [gamma_dot]
-    type = ADMaterialRealAux
-    variable = 'gamma_dot'
-    property = 'gamma_dot'
-    execute_on = 'TIMESTEP_END'
-  []
-  [force]
-    type = FunctionAux
-    variable = 'force'
-    function = 'step'
   []
 []
 
@@ -240,23 +182,32 @@ gamma = 0.5
     limiting_crack_speed = 2e8
     lag_crack_speed = true
   []
+  # [local_dissipation]
+  #   type = PolynomialLocalDissipation
+  #   coefficients = '0 2 -1'
+  #   d = 'd'
+  # []
   [local_dissipation]
-    type = PolynomialLocalDissipation
-    coefficients = '0 2 -1'
+    type = QuadraticLocalDissipation
     d = 'd'
   []
   [fracture_properties]
     type = ADDynamicFractureMaterial
     d = 'd'
-    local_dissipation_norm = '3.14159265358979'
+    local_dissipation_norm = '2'
   []
   [degradation]
-    type = WuDegradation
+    type = QuadraticDegradation
     d = 'd'
     residual_degradation = 0
-    a2 = '-0.5'
-    a3 = 0
   []
+  # [degradation]
+  #   type = WuDegradation
+  #   d = 'd'
+  #   residual_degradation = 0
+  #   a2 = '-0.5'
+  #   a3 = 0
+  # []
   # [gamma]
   #   type = CrackSurfaceDensityDot
   #   d = 'd'
@@ -279,7 +230,7 @@ gamma = 0.5
   [gamma]
     type = CrackSurfaceDensityDot
     d = 'd'
-    local_dissipation_norm = 3.14159265358979
+    local_dissipation_norm = 2
   []
 []
 
@@ -287,13 +238,13 @@ gamma = 0.5
   [step1]
     type = SmoothStep
     t_end = 0.1
-    y_end = 1.5
+    y_end = 2
     N = 2
   []
   [step2]
     type = SmoothStep
     t_end = 0.1
-    y_end = 1.5
+    y_end = 2
     N = 2
     t_offset = 0.5
   []
@@ -311,16 +262,16 @@ gamma = 0.5
     variable = 'disp_x'
     value = 0.0
   []
-  [right]
-    type = ADPressure
-    boundary = right
-    variable = 'disp_x'
-    function = 'step'
-    component = 0
-    constant = -1
-    alpha = '${alpha}'
-    use_displaced_mesh = false
-  []
+  # [right]
+  #   type = ADPressure
+  #   boundary = right
+  #   variable = 'disp_x'
+  #   function = 'step'
+  #   component = 0
+  #   constant = 1
+  #   alpha = '${alpha}'
+  #   use_displaced_mesh = false
+  # []
 []
 
 [Postprocessors]
@@ -330,36 +281,22 @@ gamma = 0.5
   [kinetic_energy]
     type = ADKineticEnergy
   []
-  # [fracture_energy]
-  #   type = ADFractureEnergy
-  #   d = 'd'
-  # []
   [fracture_energy]
-    type = ElementIntegralVariablePostprocessor
-    variable = 'G'
-  []
-  [work_input]
-    type = ExternalEnergy
-    displacements = 'disp_x'
-    forces = 'force'
-    boundary = 'right'
+    type = ADFractureEnergy
+    d = 'd'
   []
   [total_energy]
     type = LinearCombinationPostprocessor
-    pp_coefs = '1 1 0.45'
+    pp_coefs = '1 1 1'
     pp_names = 'elastic_energy kinetic_energy fracture_energy'
   []
 []
 
-[Problem]
-  type = FixedPointProblem
-[]
-
 [Executioner]
-  type = FixedPointTransient
+  type = Transient
   # dt = 1e-3 #CFL condition
   dt = 0.005
-  end_time = 5
+  num_steps = 2
   solve_type = 'NEWTON'
 
   petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
@@ -369,9 +306,6 @@ gamma = 0.5
   nl_rel_tol = 1e-8
   l_max_its = 50
   nl_max_its = 100
-
-  fp_max_its = 10
-  fp_tol = 1e-2
 
   [TimeIntegrator]
     type = NewmarkBeta
@@ -384,7 +318,7 @@ gamma = 0.5
   print_linear_residuals = false
   [Exodus]
     type = Exodus
-    file_base = 'mechanical_fracture1d_${mu}'
+    file_base = 'mechanical_fracture1d_gamma'
     output_material_properties = true
     show_material_properties = 'E_el_active crack_speed gamma gamma_dot'
   []
@@ -395,12 +329,6 @@ gamma = 0.5
   []
   [csv]
     type = CSV
-    file_base = 'mechanical_fracture1d_energies_${mu}'
+    file_base = 'mechanical_fracture1d_energies_gamma'
   []
-[]
-
-[Debug]
-  # show_var_residual_norms = true
-  # show_parser = true
-  # show_actions = true
 []
