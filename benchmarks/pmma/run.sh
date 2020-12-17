@@ -11,3 +11,5 @@ mpirun -n 16 ../../raccoon-opt -i viscous/mechanical.i BCs/top_BC/value='0.06' m
 mpirun -n 16 ../../raccoon-opt -i viscous/mechanical.i BCs/top_BC/value='0.06' mu=9e-8
 mpirun -n 16 ../../raccoon-opt -i viscous/mechanical.i BCs/top_BC/value='0.06' mu=9e-7
 mpirun -n 16 ../../raccoon-opt -i viscous/mechanical.i BCs/top_BC/value='0.06' mu=9e-6
+
+# For Sodalime problem, see whether we can model the putty boundary layer

@@ -4,8 +4,8 @@ nu = 0.35
 
 # sigmac = 75
 psic = 0.91
-Gc = 0.3
-l = 0.04
+Gc = 3
+l = 0.4
 
 vlim = 1e6
 
@@ -319,7 +319,7 @@ mu = 9e-9
 
 [Executioner]
   type = Transient
-  end_time = 2e-6
+  end_time = 8e-6
 
   nl_abs_tol = 1e-6
   l_abs_tol = 1e-10

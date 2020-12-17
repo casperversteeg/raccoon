@@ -103,27 +103,27 @@ vlim = 6e8
 
 [Kernels]
   [solid_x]
-    type = ADDynamicStressDivergenceTensors
+    type = ADStressDivergenceTensors
     variable = disp_x
     component = 0
     static_initialization = true
     # alpha = '${alpha}'
   []
   [solid_y]
-    type = ADDynamicStressDivergenceTensors
+    type = ADStressDivergenceTensors
     variable = disp_y
     component = 1
     static_initialization = true
     # alpha = '${alpha}'
   []
   [inertia_x]
-    type = InertialForce
+    type = ADInertialForce
     variable = disp_x
     use_displaced_mesh = false
     # alpha = '${alpha}'
   []
   [inertia_y]
-    type = InertialForce
+    type = ADInertialForce
     variable = disp_y
     use_displaced_mesh = false
     # alpha = '${alpha}'
@@ -207,14 +207,9 @@ vlim = 6e8
 []
 
 [Materials]
-  [dens]
-    type = GenericConstantMaterial
-    prop_names = 'density'
-    prop_values = '${rho}'
-  []
   [const]
     type = ADGenericConstantMaterial
-    prop_names = 'phase_field_regularization_length critical_fracture_energy dens_ad'
+    prop_names = 'phase_field_regularization_length critical_fracture_energy density'
     prop_values = '${l} ${psic} ${rho}'
   []
   [elasticity_tensor]
@@ -230,7 +225,7 @@ vlim = 6e8
     type = ADComputeSmallStrain
   []
   [Gc]
-    type = ADCubicEnergyReleaseRate
+    type = ADConstantEnergyReleaseRate
     d = 'd'
     static_fracture_energy = '${Gc}'
     limiting_crack_speed = '${vlim}'

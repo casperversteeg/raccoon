@@ -1,16 +1,16 @@
 h = 8;
 w = 16;
 
-E = 0.02;
+E = 0.04;
 
 Point(1) = {-w+4,   0, 0,    E};
-Point(2) = {   0,   0, 0,    E};
-Point(3) = {   0, h/8, 0, 30*E};
-Point(4) = {   0,   h, 0, 30*E};
-Point(5) = {  -w,   h, 0, 30*E};
-Point(6) = {  -w,   0, 0, 30*E};
-Point(7) = {-w+5,h/16, 0,    E};
-Point(8) = {-w/2, h/8, 0,    E};
+Point(2) = {   w,   0, 0,    E};
+Point(3) = {   w,h/2, 0,    E};
+Point(4) = {   w,   h, 0, 10*E};
+Point(5) = {  -w,   h, 0, 10*E};
+Point(6) = {  -w,   0, 0, 10*E};
+Point(7) = {-w+4,h/16, 0,    E};
+Point(8) = {   0, h/2, 0,    E};
 Point(9) = {-w/2,   0, 0,    E};
 
 
@@ -26,8 +26,8 @@ Line Loop(1) = {1, 2, 3, 4, 5, 6, 7};
 Plane Surface(1) = {1};
 Line(8) = {1, 7};
 Line(9) = {7, 8};
-/* Line(10) = {8, 9}; */
-Line{8, 9} In Surface {1};
+Line(10) = {8, 3};
+Line{8, 9, 10} In Surface {1};
 
 // Names
 Physical Surface("all") = {1};
