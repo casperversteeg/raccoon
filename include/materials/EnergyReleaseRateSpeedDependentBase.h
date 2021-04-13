@@ -32,6 +32,9 @@ protected:
   const MaterialProperty<Real> * _v_old;
   const Real & _Gc0;
   const Real & _v_lim;
+
+  const ADMaterialProperty<Real> & _gamma_dot;
+
   const Real & _d_thres_lower;
   const Real & _d_thres_upper;
 

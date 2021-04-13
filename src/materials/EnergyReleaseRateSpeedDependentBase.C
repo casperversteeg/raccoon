@@ -26,6 +26,11 @@ EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::validParams()
       "damage_threshold_upper",
       1.0,
       "Lower bound on the damage value, above which the crack speed will be computed.");
+  params.addParam<MaterialPropertyName>(
+      "crack_surface_density_dot_name",
+      "gamma_dot",
+      "Name of material property that stores the time rate of change of the "
+      "crack surface density.");
   // params.addRequiredCoupledVar("v", "Crack speed variable name");
   params.addRequiredCoupledVar("d", "damage variable");
   params.addParam<MaterialPropertyName>(
@@ -50,6 +55,7 @@ EnergyReleaseRateSpeedDependentBaseTempl<is_ad>::EnergyReleaseRateSpeedDependent
     _v_old(_lag_v ? &getMaterialPropertyOld<Real>(_v_name) : nullptr),
     _Gc0(getParam<Real>("static_fracture_energy")),
     _v_lim(getParam<Real>("limiting_crack_speed")),
+    _gamma_dot(getADMaterialProperty<Real>("crack_surface_density_dot_name")),
     _d_thres_lower(getParam<Real>("damage_threshold_lower")),
     _d_thres_upper(getParam<Real>("damage_threshold_upper")),
     _Gc(declareGenericProperty<Real, is_ad>(

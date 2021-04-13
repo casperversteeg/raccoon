@@ -26,9 +26,12 @@ template <bool is_ad>
 void
 LinearEnergyReleaseRateTempl<is_ad>::computeGc()
 {
-  ADReal v = (_lag_v ? (*_v_old)[_qp] : _v[_qp]);
-  _Gc[_qp] = _Gc0 * (1 + (v / _v_lim));
-  _dGc_dv[_qp] = _Gc0 / _v_lim / _v_lim;
+  // ADReal v = (_lag_v ? (*_v_old)[_qp] : _v[_qp]);
+  // _Gc[_qp] = _Gc0 * (1 + (v / _v_lim));
+  // _dGc_dv[_qp] = _Gc0 / _v_lim / _v_lim;
+  // _d2Gc_dv2[_qp] = 0.0;
+  _Gc[_qp] = _Gc0 * (1 + 2 * std::abs(_gamma_dot[_qp]));
+  _dGc_dv[_qp] = 0.0;
   _d2Gc_dv2[_qp] = 0.0;
 }
 

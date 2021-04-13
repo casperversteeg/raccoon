@@ -33,14 +33,6 @@ mu = 0.0
     order = CONSTANT
     family = MONOMIAL
   []
-  [d_vel]
-    order = CONSTANT
-    family = MONOMIAL
-  []
-  [gamma_dot]
-    order = CONSTANT
-    family = MONOMIAL
-  []
   [E_el_active]
   []
 []
@@ -95,16 +87,10 @@ mu = 0.0
     gradient_variable = 'd'
     component = 'x'
   []
-  [d_vel]
-    type = ADMaterialRealAux
-    variable = 'd_vel'
-    property = 'crack_speed'
-    execute_on = 'TIMESTEP_END'
-  []
-  [gamma_dot]
-    type = ADMaterialRealAux
-    variable = 'gamma_dot'
-    property = 'gamma_dot'
+  [d_dot]
+    type = TestNewmarkTI
+    variable = 'd_dot'
+    displacement = 'd'
     execute_on = 'TIMESTEP_END'
   []
   [E_el_active]
@@ -151,7 +137,7 @@ mu = 0.0
 [Functions]
   [driving]
     type = ParsedFunction
-    value = '(1-exp(-5*t^2))*sin(50*t)^2'
+    value = 'if(t < 0.001, 1000*t, 1)'
   []
 []
 
@@ -174,8 +160,8 @@ mu = 0.0
 [Executioner]
   type = Transient
   # dt = 1e-3 #CFL condition
-  dt = 0.00001
-  end_time = 1
+  dt = 0.000001
+  end_time = 0.001
   solve_type = 'NEWTON'
 
   petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
@@ -183,8 +169,8 @@ mu = 0.0
 
   nl_abs_tol = 1e-6
   nl_rel_tol = 1e-8
-  l_max_its = 50
-  nl_max_its = 100
+  l_max_its = 500
+  nl_max_its = 1000
 
 []
 
@@ -195,7 +181,7 @@ mu = 0.0
     file_base = 'pseudoparabolicBC_${mu}'
     output_material_properties = true
     show_material_properties = 'E_el_active crack_speed gamma gamma_dot'
-    interval = 10
+    # interval = 10
   []
   [Console]
     type = Console
